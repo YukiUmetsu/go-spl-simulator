@@ -199,6 +199,10 @@ func (c MonsterCard) SetIsOnlyMonster() {
 	c.isOnlyMonster = true
 }
 
+func (c MonsterCard) HasAttack() bool {
+	return c.Melee > 0 || c.Ranged > 0 || c.Magic > 0
+}
+
 func (c MonsterCard) GetPostAbilityMaxHealth() int {
 	maxHealth := 1
 	if c.GameCard.StartingHealth > maxHealth {
@@ -333,6 +337,24 @@ func (c MonsterCard) GetPostAbilityMelee() int {
 	return utils.GetBigger(postMelee+meleeModifier, 1)
 }
 
+func (c MonsterCard) GetPostAbilitySpeed() int {
+	speedModifier := 0
+	speed := c.Speed + c.summonerSpeed
+	if c.GetIsLastStand() {
+		speed = int(math.Floor(float64(speed) * LAST_STAND_MULTIPLIER))
+	}
+	if c.IsEnraged() {
+		speed = int(math.Ceil(float64(speed) * ENRAGE_MULTIPLIER))
+	}
+	if c.HasBuff(ABILITY_SWIFTNESS) {
+		speedModifier = speedModifier + c.GetBuffCount(ABILITY_SWIFTNESS)
+	}
+	if c.HasBuff(ABILITY_SLOW) {
+		speedModifier = speedModifier - c.GetBuffCount(ABILITY_SLOW)
+	}
+	return utils.GetBigger(speed+speedModifier, 1)
+}
+
 func (c MonsterCard) GetPostAbilityMaxArmor() int {
 	postArmor := c.StartingArmor
 	if c.GetIsLastStand() {
@@ -398,4 +420,54 @@ func (c MonsterCard) Resurrect() {
 	}
 	c.Armor = c.GetPostAbilityMaxArmor()
 	c.CleanseDebuffs()
+}
+
+func (c MonsterCard) IsEnraged() bool {
+	return c.HasAbility(ABILITY_ENRAGE) && c.Health < c.GetPostAbilityMaxHealth()
+}
+
+func (c MonsterCard) IsPureMelee() bool {
+	return c.Melee > 0 && c.Ranged == 0 && c.Magic == 0
+}
+
+func (c MonsterCard) CanMeleeAttack() bool {
+	if c.HasAbility(ABILITY_OPPORTUNITY) ||
+		c.HasAbility(ABILITY_SNEAK) ||
+		c.cardPosition == 0 ||
+		c.HasAbility(ABILITY_MELEE_MAYHEM) ||
+		(c.HasAbility(ABILITY_REACH) && c.cardPosition == 1) {
+		return true
+	}
+	return false
+}
+
+/* Summoner Related stuff */
+func (c MonsterCard) GetSummonerArmor() int {
+	return c.summonerArmor
+}
+
+func (c MonsterCard) AddSummonerArmor(stat int) {
+	c.summonerArmor = c.summonerArmor + stat
+	c.Armor = utils.GetBigger(c.Armor+stat, 1)
+}
+
+func (c MonsterCard) AddSummonerHealth(stat int) {
+	c.StartingHealth = c.StartingHealth + stat
+	c.Health = utils.GetBigger(c.Health+stat, 1)
+}
+
+func (c MonsterCard) AddSummonerSpeed(stat int) {
+	c.summonerSpeed = c.summonerSpeed + stat
+}
+
+func (c MonsterCard) AddSummonerMelee(stat int) {
+	c.summonerMelee = c.summonerMelee + stat
+}
+
+func (c MonsterCard) AddSummonerRanged(stat int) {
+	c.summonerRanged = c.summonerRanged + stat
+}
+
+func (c MonsterCard) AddSummonerMagic(stat int) {
+	c.summonerMagic = c.summonerMagic + stat
 }

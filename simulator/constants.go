@@ -87,6 +87,9 @@ const (
 	ABILITY_VOID                      = "Void"
 	ABILITY_VOID_ARMOR                = "Void Armor"
 	ABILITY_WEAKEN                    = "Weaken"
+
+	/* RULESET ABILITY */
+	ABILITY_MELEE_MAYHEM = "Melee Mayhem"
 )
 
 type CardEdition int
