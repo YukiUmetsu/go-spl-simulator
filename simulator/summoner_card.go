@@ -1,35 +1,22 @@
-package main
+package simulator
 
 import (
-	utilGeneral "utils/generals"
+	utils "utils"
 )
 
 type SummonerCard struct {
-	cardDetail     SummonerCardDetail
-	cardLevel      int
-	team           TeamNumber
-	DebuffMap      map[Ability]int
-	BuffMap        map[Ability]int
-	Abilities      []Ability
-	Speed          int
-	StartingArmor  int
-	Armor          int
-	Health         int
-	StartingHealth int
-	Magic          int
-	Melee          int
-	Ranged         int
-	Mana           int
+	GameCard
+	cardDetail SummonerCardDetail
 }
 
 func (c SummonerCard) Setup(cardDetail SummonerCardDetail, cardLevel int) {
 	c.cardDetail = cardDetail
-	c.cardLevel = cardLevel - 1
+	c.CardLevel = cardLevel - 1
 	c.SetStats(c.cardDetail.Stats)
 }
 
 func (c SummonerCard) SetTeam(teamNumber TeamNumber) {
-	c.team = teamNumber
+	c.Team = teamNumber
 }
 
 func (c SummonerCard) SetStats(stats FlatCardStats) {
@@ -64,11 +51,11 @@ func (c SummonerCard) HasAbility(ability Ability) bool {
 }
 
 func (c SummonerCard) RemoveAbility(ability Ability) {
-	c.Abilities = utilGeneral.Remove(c.Abilities, ability)
+	c.Abilities = utils.Remove(c.Abilities, ability)
 }
 
 func (c SummonerCard) GetTeamNumber() TeamNumber {
-	return c.team
+	return c.Team
 }
 
 func (c SummonerCard) GetRarity() int {
@@ -80,7 +67,7 @@ func (c SummonerCard) GetName() string {
 }
 
 func (c SummonerCard) GetLevel() int {
-	return c.cardLevel
+	return c.CardLevel
 }
 
 func (c SummonerCard) GetDebuffs() map[Ability]int {
@@ -93,21 +80,23 @@ func (c SummonerCard) GetBuffs() map[Ability]int {
 
 func (c SummonerCard) Clone() SummonerCard {
 	clonedCard := SummonerCard{
-		cardDetail:     c.cardDetail,
-		cardLevel:      c.cardLevel,
-		team:           c.team,
-		DebuffMap:      c.DebuffMap,
-		BuffMap:        c.BuffMap,
-		Abilities:      c.Abilities,
-		Speed:          c.Speed,
-		StartingArmor:  c.StartingArmor,
-		Armor:          c.Armor,
-		StartingHealth: c.StartingHealth,
-		Health:         c.Health,
-		Magic:          c.Magic,
-		Melee:          c.Melee,
-		Ranged:         c.Ranged,
-		Mana:           c.Mana,
+		cardDetail: c.cardDetail,
+		GameCard: GameCard{
+			CardLevel:      c.CardLevel,
+			Team:           c.Team,
+			DebuffMap:      c.DebuffMap,
+			BuffMap:        c.BuffMap,
+			Abilities:      c.Abilities,
+			Speed:          c.Speed,
+			StartingArmor:  c.StartingArmor,
+			Armor:          c.Armor,
+			StartingHealth: c.StartingHealth,
+			Health:         c.Health,
+			Magic:          c.Magic,
+			Melee:          c.Melee,
+			Ranged:         c.Ranged,
+			Mana:           c.Mana,
+		},
 	}
 	clonedCard.SetTeam(c.GetTeamNumber())
 	return clonedCard
