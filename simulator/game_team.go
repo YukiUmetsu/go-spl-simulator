@@ -169,13 +169,13 @@ func (t *GameTeam) GetSneakTarget() *MonsterCard {
 /** Which monster to repair, returns NULL if none. Repair target is the one that lost the most armor. */
 func (t *GameTeam) GetRepairTarget() *MonsterCard {
 	largestArmorDiff := 0
-	monsterToRepair := nil
+	var monsterToRepair *MonsterCard
 
 	for _, m := range t.GetAliveMonsters() {
 		armorDiff := m.GetPostAbilityMaxArmor() - m.Armor
 		if armorDiff > largestArmorDiff {
 			largestArmorDiff = armorDiff
-			monsterToRepair = m
+			monsterToRepair = &m
 		}
 	}
 
