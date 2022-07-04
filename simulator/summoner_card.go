@@ -9,17 +9,17 @@ type SummonerCard struct {
 	cardDetail SummonerCardDetail
 }
 
-func (c SummonerCard) Setup(cardDetail SummonerCardDetail, cardLevel int) {
+func (c *SummonerCard) Setup(cardDetail SummonerCardDetail, cardLevel int) {
 	c.cardDetail = cardDetail
 	c.CardLevel = cardLevel - 1
 	c.SetStats(c.cardDetail.Stats)
 }
 
-func (c SummonerCard) SetTeam(teamNumber TeamNumber) {
+func (c *SummonerCard) SetTeam(teamNumber TeamNumber) {
 	c.Team = teamNumber
 }
 
-func (c SummonerCard) SetStats(stats FlatCardStats) {
+func (c *SummonerCard) SetStats(stats FlatCardStats) {
 	c.Speed = stats.Speed
 	c.Armor = stats.Armor
 	c.StartingArmor = stats.Armor
@@ -32,53 +32,53 @@ func (c SummonerCard) SetStats(stats FlatCardStats) {
 	c.AddAbilities(stats.Abilities)
 }
 
-func (c SummonerCard) GetStat(stat int) FlatCardStats {
+func (c *SummonerCard) GetStat(stat int) FlatCardStats {
 	return c.cardDetail.Stats
 }
 
-func (c SummonerCard) AddAbilities(abilities []Ability) {
+func (c *SummonerCard) AddAbilities(abilities []Ability) {
 	for _, ability := range abilities {
 		c.Abilities = append(c.Abilities, ability)
 	}
 }
 
-func (c SummonerCard) GetCardDetail() SummonerCardDetail {
+func (c *SummonerCard) GetCardDetail() SummonerCardDetail {
 	return c.cardDetail
 }
 
-func (c SummonerCard) HasAbility(ability Ability) bool {
+func (c *SummonerCard) HasAbility(ability Ability) bool {
 	return c.HasAbility(ability)
 }
 
-func (c SummonerCard) RemoveAbility(ability Ability) {
+func (c *SummonerCard) RemoveAbility(ability Ability) {
 	c.Abilities = utils.Remove(c.Abilities, ability)
 }
 
-func (c SummonerCard) GetTeamNumber() TeamNumber {
+func (c *SummonerCard) GetTeamNumber() TeamNumber {
 	return c.Team
 }
 
-func (c SummonerCard) GetRarity() int {
+func (c *SummonerCard) GetRarity() int {
 	return c.cardDetail.Rarity
 }
 
-func (c SummonerCard) GetName() string {
+func (c *SummonerCard) GetName() string {
 	return c.cardDetail.Name
 }
 
-func (c SummonerCard) GetLevel() int {
+func (c *SummonerCard) GetLevel() int {
 	return c.CardLevel
 }
 
-func (c SummonerCard) GetDebuffs() map[Ability]int {
+func (c *SummonerCard) GetDebuffs() map[Ability]int {
 	return c.DebuffMap
 }
 
-func (c SummonerCard) GetBuffs() map[Ability]int {
+func (c *SummonerCard) GetBuffs() map[Ability]int {
 	return c.BuffMap
 }
 
-func (c SummonerCard) Clone() SummonerCard {
+func (c *SummonerCard) Clone() SummonerCard {
 	clonedCard := SummonerCard{
 		cardDetail: c.cardDetail,
 		GameCard: GameCard{
@@ -102,7 +102,7 @@ func (c SummonerCard) Clone() SummonerCard {
 	return clonedCard
 }
 
-func (c SummonerCard) AddAbilitiesWithArray(abilities []Ability) {
+func (c *SummonerCard) AddAbilitiesWithArray(abilities []Ability) {
 	for _, a := range abilities {
 		c.Abilities = append(c.Abilities, a)
 	}

@@ -21,17 +21,17 @@ type MonsterCard struct {
 	hadDivineShield bool
 }
 
-func (c MonsterCard) Setup(cardDetail MonsterCardDetail, cardLevel int) {
+func (c *MonsterCard) Setup(cardDetail MonsterCardDetail, cardLevel int) {
 	c.cardDetail = cardDetail
 	c.CardLevel = cardLevel - 1
 	c.SetStats(c.cardDetail.Stats)
 }
 
-func (c MonsterCard) SetTeam(teamNumber TeamNumber) {
+func (c *MonsterCard) SetTeam(teamNumber TeamNumber) {
 	c.Team = teamNumber
 }
 
-func (c MonsterCard) SetStats(stats CardStatsByLevel) {
+func (c *MonsterCard) SetStats(stats CardStatsByLevel) {
 	c.Speed = c.GetStat(stats.Speed)
 	c.Armor = c.GetStat(stats.Armor)
 	c.StartingArmor = c.GetStat(stats.Armor)
@@ -44,11 +44,11 @@ func (c MonsterCard) SetStats(stats CardStatsByLevel) {
 	c.AddAbilities(stats.Abilities)
 }
 
-func (c MonsterCard) GetStat(stats []int) int {
+func (c *MonsterCard) GetStat(stats []int) int {
 	return stats[c.CardLevel]
 }
 
-func (c MonsterCard) AddAbilities(abilitiesArray [][]Ability) {
+func (c *MonsterCard) AddAbilities(abilitiesArray [][]Ability) {
 	for i, abilities := range abilitiesArray {
 		if i+1 <= c.CardLevel {
 			for _, ability := range abilities {
@@ -58,43 +58,51 @@ func (c MonsterCard) AddAbilities(abilitiesArray [][]Ability) {
 	}
 }
 
-func (c MonsterCard) GetCardDetail() MonsterCardDetail {
+func (c *MonsterCard) GetCardDetail() MonsterCardDetail {
 	return c.cardDetail
 }
 
-func (c MonsterCard) HasAbility(ability Ability) bool {
+func (c *MonsterCard) HasAbility(ability Ability) bool {
 	return c.HasAbility(ability)
 }
 
-func (c MonsterCard) RemoveAbility(ability Ability) {
+func (c *MonsterCard) RemoveAbility(ability Ability) {
 	c.Abilities = utils.Remove(c.Abilities, ability)
 }
 
-func (c MonsterCard) GetTeamNumber() TeamNumber {
+func (c *MonsterCard) GetTeamNumber() TeamNumber {
 	return c.Team
 }
 
-func (c MonsterCard) GetRarity() int {
+func (c *MonsterCard) GetRarity() int {
 	return c.cardDetail.Rarity
 }
 
-func (c MonsterCard) GetName() string {
+func (c *MonsterCard) GetName() string {
 	return c.cardDetail.Name
 }
 
-func (c MonsterCard) GetLevel() int {
+func (c *MonsterCard) GetLevel() int {
 	return c.CardLevel
 }
 
-func (c MonsterCard) GetDebuffs() map[Ability]int {
+func (c *MonsterCard) GetDebuffs() map[Ability]int {
 	return c.DebuffMap
 }
 
-func (c MonsterCard) GetBuffs() map[Ability]int {
+func (c *MonsterCard) GetBuffs() map[Ability]int {
 	return c.BuffMap
 }
 
-func (c MonsterCard) Clone() MonsterCard {
+func (c *MonsterCard) GetHasTurnPassed() bool {
+	return c.hasTurnPassed
+}
+
+func (c *MonsterCard) SetHasTurnPassed(hasTurnPassed bool) {
+	c.hasTurnPassed = hasTurnPassed
+}
+
+func (c *MonsterCard) Clone() MonsterCard {
 	clonedCard := MonsterCard{
 		cardDetail: c.cardDetail,
 		GameCard: GameCard{
@@ -118,26 +126,26 @@ func (c MonsterCard) Clone() MonsterCard {
 	return clonedCard
 }
 
-func (c MonsterCard) AddAbilitiesWithArray(abilities []Ability) {
+func (c *MonsterCard) AddAbilitiesWithArray(abilities []Ability) {
 	for _, a := range abilities {
 		c.Abilities = append(c.Abilities, a)
 	}
 }
 
 // monster only
-func (c MonsterCard) SetCardPosition(position int) {
+func (c *MonsterCard) SetCardPosition(position int) {
 	c.cardPosition = position
 }
 
-func (c MonsterCard) IsAlive() bool {
+func (c *MonsterCard) IsAlive() bool {
 	return c.GameCard.Health >= 0
 }
 
-func (c MonsterCard) SetHealth(health int) {
+func (c *MonsterCard) SetHealth(health int) {
 	c.GameCard.Health = health
 }
 
-func (c MonsterCard) AddHealth(amount int) {
+func (c *MonsterCard) AddHealth(amount int) {
 	if !c.IsAlive() {
 		return
 	}
@@ -157,11 +165,11 @@ func (c MonsterCard) AddHealth(amount int) {
 	}
 }
 
-func (c MonsterCard) HasBuff(buff Ability) bool {
+func (c *MonsterCard) HasBuff(buff Ability) bool {
 	return utils.StrArrContains(c.GameCard.BuffMap, buff)
 }
 
-func (c MonsterCard) GetBuffCount(buff Ability) int {
+func (c *MonsterCard) GetBuffCount(buff Ability) int {
 	if val, ok := c.GameCard.BuffMap[buff]; ok {
 		return val
 	} else {
@@ -169,11 +177,11 @@ func (c MonsterCard) GetBuffCount(buff Ability) int {
 	}
 }
 
-func (c MonsterCard) HasDebuff(buff Ability) bool {
+func (c *MonsterCard) HasDebuff(buff Ability) bool {
 	return utils.StrArrContains(c.GameCard.DebuffMap, buff)
 }
 
-func (c MonsterCard) GetDebuffCount(debuff Ability) int {
+func (c *MonsterCard) GetDebuffCount(debuff Ability) int {
 	if val, ok := c.GameCard.DebuffMap[debuff]; ok {
 		return val
 	} else {
@@ -181,15 +189,15 @@ func (c MonsterCard) GetDebuffCount(debuff Ability) int {
 	}
 }
 
-func (c MonsterCard) GetIsLastStand() bool {
+func (c *MonsterCard) GetIsLastStand() bool {
 	return c.isOnlyMonster && c.HasAbility(ABILITY_LAST_STAND)
 }
 
-func (c MonsterCard) IsLastMonster() bool {
+func (c *MonsterCard) IsLastMonster() bool {
 	return c.isOnlyMonster
 }
 
-func (c MonsterCard) SetIsOnlyMonster() {
+func (c *MonsterCard) SetIsOnlyMonster() {
 	if c.HasAbility(ABILITY_LAST_STAND) {
 		prevMaxHealth := c.GetPostAbilityMaxHealth()
 		dmgTaken := prevMaxHealth - c.Health
@@ -199,11 +207,11 @@ func (c MonsterCard) SetIsOnlyMonster() {
 	c.isOnlyMonster = true
 }
 
-func (c MonsterCard) HasAttack() bool {
+func (c *MonsterCard) HasAttack() bool {
 	return c.Melee > 0 || c.Ranged > 0 || c.Magic > 0
 }
 
-func (c MonsterCard) GetPostAbilityMaxHealth() int {
+func (c *MonsterCard) GetPostAbilityMaxHealth() int {
 	maxHealth := 1
 	if c.GameCard.StartingHealth > maxHealth {
 		maxHealth = c.GameCard.StartingHealth
@@ -240,7 +248,7 @@ func (c MonsterCard) GetPostAbilityMaxHealth() int {
 	return utils.GetBigger(maxHealth, 1)
 }
 
-func (c MonsterCard) GetPostAbilityAttackOfType(attackType CardAttackType) int {
+func (c *MonsterCard) GetPostAbilityAttackOfType(attackType CardAttackType) int {
 	if attackType == ATTACK_TYPE_MAGIC {
 		return c.GetPostAbilityMagic()
 	}
@@ -254,7 +262,7 @@ func (c MonsterCard) GetPostAbilityAttackOfType(attackType CardAttackType) int {
 }
 
 /**  How much magic damage this will do */
-func (c MonsterCard) GetPostAbilityMagic() int {
+func (c *MonsterCard) GetPostAbilityMagic() int {
 	if c.Magic == 0 {
 		return 0
 	}
@@ -281,7 +289,7 @@ func (c MonsterCard) GetPostAbilityMagic() int {
 }
 
 /**  How much range damage this will do */
-func (c MonsterCard) GetPostAbilityRange() int {
+func (c *MonsterCard) GetPostAbilityRange() int {
 	if c.Ranged == 0 {
 		return 0
 	}
@@ -308,7 +316,7 @@ func (c MonsterCard) GetPostAbilityRange() int {
 }
 
 /**  How much melee damage this will do */
-func (c MonsterCard) GetPostAbilityMelee() int {
+func (c *MonsterCard) GetPostAbilityMelee() int {
 	if c.Melee == 0 {
 		return 0
 	}
@@ -337,7 +345,7 @@ func (c MonsterCard) GetPostAbilityMelee() int {
 	return utils.GetBigger(postMelee+meleeModifier, 1)
 }
 
-func (c MonsterCard) GetPostAbilitySpeed() int {
+func (c *MonsterCard) GetPostAbilitySpeed() int {
 	speedModifier := 0
 	speed := c.Speed + c.summonerSpeed
 	if c.GetIsLastStand() {
@@ -355,7 +363,7 @@ func (c MonsterCard) GetPostAbilitySpeed() int {
 	return utils.GetBigger(speed+speedModifier, 1)
 }
 
-func (c MonsterCard) GetPostAbilityMaxArmor() int {
+func (c *MonsterCard) GetPostAbilityMaxArmor() int {
 	postArmor := c.StartingArmor
 	if c.GetIsLastStand() {
 		postArmor = int(math.Floor(float64(postArmor) * LAST_STAND_MULTIPLIER))
@@ -372,7 +380,7 @@ func (c MonsterCard) GetPostAbilityMaxArmor() int {
 	return utils.GetBigger(postArmor+armorModifier, 0)
 }
 
-func (c MonsterCard) RemoveDebuff(debuff Ability) {
+func (c *MonsterCard) RemoveDebuff(debuff Ability) {
 	debuffAmount := c.GetDebuffCount(debuff) - 1
 	if debuffAmount == 0 {
 		delete(c.DebuffMap, debuff)
@@ -389,14 +397,14 @@ func (c MonsterCard) RemoveDebuff(debuff Ability) {
 	}
 }
 
-func (c MonsterCard) RemoveAllDebuff(debuff Ability) {
+func (c *MonsterCard) RemoveAllDebuff(debuff Ability) {
 	debuffAmount := c.GetDebuffCount(debuff)
 	for i := 0; i < debuffAmount; i++ {
 		c.RemoveDebuff(debuff)
 	}
 }
 
-func (c MonsterCard) CleanseDebuffs() {
+func (c *MonsterCard) CleanseDebuffs() {
 	// Special case, cleanse only removes 1 cripple
 	crippleAmount := c.GetDebuffCount(ABILITY_CRIPPLE)
 	for ability, _ := range c.DebuffMap {
@@ -413,7 +421,7 @@ func (c MonsterCard) CleanseDebuffs() {
 	}
 }
 
-func (c MonsterCard) Resurrect() {
+func (c *MonsterCard) Resurrect() {
 	c.Health = 1
 	if c.hadDivineShield {
 		c.AddAbilitiesWithArray([]Ability{ABILITY_DIVINE_SHIELD})
@@ -422,15 +430,15 @@ func (c MonsterCard) Resurrect() {
 	c.CleanseDebuffs()
 }
 
-func (c MonsterCard) IsEnraged() bool {
+func (c *MonsterCard) IsEnraged() bool {
 	return c.HasAbility(ABILITY_ENRAGE) && c.Health < c.GetPostAbilityMaxHealth()
 }
 
-func (c MonsterCard) IsPureMelee() bool {
+func (c *MonsterCard) IsPureMelee() bool {
 	return c.Melee > 0 && c.Ranged == 0 && c.Magic == 0
 }
 
-func (c MonsterCard) CanMeleeAttack() bool {
+func (c *MonsterCard) CanMeleeAttack() bool {
 	if c.HasAbility(ABILITY_OPPORTUNITY) ||
 		c.HasAbility(ABILITY_SNEAK) ||
 		c.cardPosition == 0 ||
@@ -442,32 +450,32 @@ func (c MonsterCard) CanMeleeAttack() bool {
 }
 
 /* Summoner Related stuff */
-func (c MonsterCard) GetSummonerArmor() int {
+func (c *MonsterCard) GetSummonerArmor() int {
 	return c.summonerArmor
 }
 
-func (c MonsterCard) AddSummonerArmor(stat int) {
+func (c *MonsterCard) AddSummonerArmor(stat int) {
 	c.summonerArmor = c.summonerArmor + stat
 	c.Armor = utils.GetBigger(c.Armor+stat, 1)
 }
 
-func (c MonsterCard) AddSummonerHealth(stat int) {
+func (c *MonsterCard) AddSummonerHealth(stat int) {
 	c.StartingHealth = c.StartingHealth + stat
 	c.Health = utils.GetBigger(c.Health+stat, 1)
 }
 
-func (c MonsterCard) AddSummonerSpeed(stat int) {
+func (c *MonsterCard) AddSummonerSpeed(stat int) {
 	c.summonerSpeed = c.summonerSpeed + stat
 }
 
-func (c MonsterCard) AddSummonerMelee(stat int) {
+func (c *MonsterCard) AddSummonerMelee(stat int) {
 	c.summonerMelee = c.summonerMelee + stat
 }
 
-func (c MonsterCard) AddSummonerRanged(stat int) {
+func (c *MonsterCard) AddSummonerRanged(stat int) {
 	c.summonerRanged = c.summonerRanged + stat
 }
 
-func (c MonsterCard) AddSummonerMagic(stat int) {
+func (c *MonsterCard) AddSummonerMagic(stat int) {
 	c.summonerMagic = c.summonerMagic + stat
 }
