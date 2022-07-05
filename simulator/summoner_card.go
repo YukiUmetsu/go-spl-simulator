@@ -1,7 +1,7 @@
 package simulator
 
 import (
-	utils "utils"
+	utils "game_utils"
 )
 
 type SummonerCard struct {
@@ -52,6 +52,10 @@ func (c *SummonerCard) HasAbility(ability Ability) bool {
 
 func (c *SummonerCard) RemoveAbility(ability Ability) {
 	c.Abilities = utils.Remove(c.Abilities, ability)
+}
+
+func (c *SummonerCard) RemoveAllAbilities() {
+	c.Abilities = []Ability{}
 }
 
 func (c *SummonerCard) GetTeamNumber() TeamNumber {

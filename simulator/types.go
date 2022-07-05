@@ -122,11 +122,11 @@ type BattleAllowedCards struct {
 
 type BattleLogAction interface{}
 
-type BattleLog struct {
+type MonsterBattleLog struct {
 	/** The summoner or monster performing the action. This is a snapshot of the actor AFTER the action has been performed. */
-	Actor GameCard
+	Actor MonsterCard
 	/** The target of the action. This is a snapshot of the target AFTER the action has been performed. */
-	Target GameCard
+	Target MonsterCard
 	/** The action */
 	Action BattleLogAction
 	/** The value, can be the amount of damage, or heal, etc. Based on the action */

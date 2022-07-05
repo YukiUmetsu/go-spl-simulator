@@ -10,7 +10,7 @@ type GameCardInterface interface {
 	GetLevel() int
 	GetDebuffs() map[Ability]int
 	GetBuffs() map[Ability]int
-	Clone() GameCardInterface
+	// Clone() GameCardInterface
 }
 
 type GameCard struct {

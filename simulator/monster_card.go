@@ -1,8 +1,8 @@
 package simulator
 
 import (
+	utils "game_utils"
 	"math"
-	utils "utils"
 )
 
 type MonsterCard struct {
@@ -94,6 +94,62 @@ func (c *MonsterCard) GetBuffs() map[Ability]int {
 	return c.BuffMap
 }
 
+func (c *MonsterCard) AddBuff(buff Ability) {
+	if !c.IsAlive() {
+		return
+	}
+
+	var buffsAmount int
+	if value, ok := c.BuffMap[buff]; ok {
+		buffsAmount = value + 1
+	} else {
+		buffsAmount = 1
+	}
+	c.BuffMap[buff] = buffsAmount
+
+	if buff == ABILITY_SCAVENGER {
+		utils.ScavengerMonster(c)
+	} else if buff == ABILITY_LIFE_LEECH {
+		utils.LifeLeechMonster(c)
+	} else if buff == ABILITY_STRENGTHEN {
+		utils.StrengthenMonster(c)
+	} else if buff == ABILITY_PROTECT {
+		utils.ProtectMonster(c)
+	}
+}
+
+func (c *MonsterCard) AddDebuff(debuff Ability) {
+	if !c.IsAlive() {
+		return
+	}
+
+	// the card has immunity and it's not an uncleansable debuff => ignore
+	uncleansableBuffs := utils.GetUncleansableDebuffs()
+	if utils.StrArrContains(c.GameCard.Abilities, ABILITY_IMMUNITY) && !utils.StrArrContains(uncleansableBuffs, debuff) {
+		return
+	}
+
+	// debuff is snare and snare is already applied => ignore
+	if debuff == ABILITY_SNARE && c.HasDebuff(ABILITY_SNARE) {
+		return
+	}
+
+	if debuff == ABILITY_WEAKEN {
+		utils.WeakenMonster(c)
+	} else if debuff == ABILITY_RUST {
+		utils.RustMonster(c)
+	}
+
+	var debuffAmount int
+	if value, ok := c.DebuffMap[debuff]; ok {
+		debuffAmount = value + 1
+	} else {
+		debuffAmount = 1
+	}
+
+	c.DebuffMap[debuff] = debuffAmount
+}
+
 func (c *MonsterCard) GetHasTurnPassed() bool {
 	return c.hasTurnPassed
 }
@@ -132,6 +188,21 @@ func (c *MonsterCard) AddAbilitiesWithArray(abilities []Ability) {
 	}
 }
 
+/* Returns remaining damage after hitting health */
+func (c *MonsterCard) HitHealth(damage int) int {
+	preHitHealth := c.Health
+	c.AddHealth(-1 * damage)
+	if c.Health < 0 {
+		return c.Health * -1
+	}
+
+	if c.Health == 0 {
+		return damage - preHitHealth
+	}
+
+	return 0
+}
+
 // monster only
 func (c *MonsterCard) SetCardPosition(position int) {
 	c.cardPosition = position
@@ -150,19 +221,9 @@ func (c *MonsterCard) AddHealth(amount int) {
 		return
 	}
 
-	var finalHealth int
-	postAbilityMaxHealth := c.GetPostAbilityMaxHealth()
-	if c.GameCard.Health+amount > postAbilityMaxHealth {
-		finalHealth = c.GameCard.Health + amount
-	} else {
-		finalHealth = postAbilityMaxHealth
-	}
-
-	if finalHealth > 0 {
-		c.SetHealth(finalHealth)
-	} else {
-		c.SetHealth(0)
-	}
+	finalHealth := utils.GetSmaller(c.Health+amount, c.GetPostAbilityMaxHealth())
+	finalHealth = utils.GetBigger(finalHealth, 0)
+	c.SetHealth(finalHealth)
 }
 
 func (c *MonsterCard) HasBuff(buff Ability) bool {

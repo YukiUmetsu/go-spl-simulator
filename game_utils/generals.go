@@ -1,4 +1,4 @@
-package utils
+package game_utils
 
 func Remove[T comparable](l []T, item T) []T {
     for i, other := range l {

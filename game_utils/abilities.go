@@ -1,14 +1,12 @@
-package utils
+package game_utils
 
 import (
 	sim "simulator"
 )
 
 /** Abilities that summoner applies to friendly team at the start of the game */
-func GetSummonerAbilities() []sim.Ability {
+func GetSummonerAbilityAbilities() []sim.Ability {
 	return []sim.Ability{
-		sim.ABILITY_AFFLICTION,
-		sim.ABILITY_AMPLIFY,
 		sim.ABILITY_BLAST,
 		sim.ABILITY_DIVINE_SHIELD,
 		sim.ABILITY_FLYING,
