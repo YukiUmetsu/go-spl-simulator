@@ -79,3 +79,26 @@ func GetActionAbilities() []sim.Ability {
 		sim.ABILITY_TANK_HEAL,
 	}
 }
+
+/* Check if the monster has pre-game debuff abilities. If so, return those debuffs, otherwise empty array */
+func MonsterHasDebuffAbilities(m sim.MonsterCard) []sim.Ability {
+	monsterDebuffs := []sim.Ability{}
+	debuffs := GetMonsterPreGameDebuffAbilities()
+	for _, ability := range m.GameCard.Abilities {
+		if StrArrContains(debuffs, ability) {
+			monsterDebuffs = append(monsterDebuffs, ability)
+		}
+	}
+	return monsterDebuffs
+}
+
+func MonsterHasBuffsAbilities(m sim.MonsterCard) []sim.Ability {
+	monsterBuffs := []sim.Ability{}
+	buffs := GetMonsterPreGameBuffAbilities()
+	for _, ability := range m.GameCard.Abilities {
+		if StrArrContains(buffs, ability) {
+			monsterBuffs = append(monsterBuffs, ability)
+		}
+	}
+	return monsterBuffs
+}

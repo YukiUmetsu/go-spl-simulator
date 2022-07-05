@@ -9,7 +9,7 @@ type Game struct {
 	team1      GameTeam
 	team2      GameTeam
 	rulesets   []Ruleset
-	battleLogs []MonsterBattleLog
+	battleLogs []BattleLog
 	shouldLog  bool
 	/* 1: team1, 2: team2, 3: Tie */
 	winner       *TeamNumber
@@ -30,9 +30,9 @@ func (g *Game) GetWinner() *TeamNumber {
 	return g.winner
 }
 
-func (g *Game) GetBattleLogs() ([]MonsterBattleLog, error) {
+func (g *Game) GetBattleLogs() ([]BattleLog, error) {
 	if !g.shouldLog {
-		return []MonsterBattleLog{}, errors.New("you must instantiate the game with enableLogs as true")
+		return []BattleLog{}, errors.New("you must instantiate the game with enableLogs as true")
 	}
 	return g.battleLogs, nil
 }
@@ -67,7 +67,7 @@ func (g *Game) PlayGame() {
 
 	g.team1.SetAllMonsterHealth()
 	g.team2.SetAllMonsterHealth()
-	g.PlayRoundsUntilGameEnd()
+	g.PlayRoundsUntilGameEnd(0)
 }
 
 func (g *Game) DoSummonerPreGameBuff(summoner SummonerCard, friendlyMonsters []MonsterCard) {
@@ -247,9 +247,9 @@ func (g *Game) FatigueMonsters(roundNumber int) {
 	allAliveMonsters := g.GetAllAliveMonsters()
 
 	for _, m := range allAliveMonsters {
-		g.CreateAndAddBattleLog(BATTLE_ACTION_FATIGUE, m, nil, fatigueDamage)
+		g.CreateAndAddBattleLog(BATTLE_ACTION_FATIGUE, &m, nil, fatigueDamage)
 		m.HitHealth(fatigueDamage)
-		g.MaybeDead(m)
+		g.ProcessIfDead(m)
 	}
 
 	g.CheckAndSetGameWinner()
@@ -263,16 +263,16 @@ func (g *Game) CreateAndAddBattleLog(action AdditionalBattleAction, cardOne *Mon
 		return
 	}
 
-	var actor MonsterCard
-	var target MonsterCard
+	var actor GameCardInterface
+	var target GameCardInterface
 	if cardOne != nil {
-		actor = (*cardOne).Clone()
+		actor = cardOne.Clone()
 	}
 	if cardTwo != nil {
-		target = (*cardTwo).Clone()
+		target = cardTwo.Clone()
 	}
 
-	log := MonsterBattleLog{
+	log := BattleLog{
 		Actor:  actor,
 		Action: action,
 		Target: target,
@@ -281,14 +281,81 @@ func (g *Game) CreateAndAddBattleLog(action AdditionalBattleAction, cardOne *Mon
 	g.battleLogs = append(g.battleLogs, log)
 }
 
-// TODO
-func (g *Game) MaybeDead(m MonsterCard) {
+func (g *Game) CheckAndSetGameWinner() {
+	team1AliveMonstersCount := len(g.team1.GetAliveMonsters())
+	team2AliveMonstersCount := len(g.team2.GetAliveMonsters())
 
+	if team1AliveMonstersCount == 1 && team2AliveMonstersCount == 1 {
+		*g.winner = TEAM_NUM_UNKNOWN
+	} else if team2AliveMonstersCount == 0 {
+		*g.winner = TEAM_NUM_ONE
+	} else if team1AliveMonstersCount == 0 {
+		*g.winner = TEAM_NUM_TWO
+	}
 }
 
-// TODO
-func (g *Game) CheckAndSetGameWinner() {
+func (g *Game) ProcessIfDead(m MonsterCard) {
+	if m.IsAlive() || !utils.CardsArrIncludesMonster(g.deadMonsters, m) {
+		return
+	}
 
+	// monster is dead
+	g.CreateAndAddBattleLog(BATTLE_ACTION_DEATH, &m, nil, 0)
+	g.deadMonsters = append(g.deadMonsters, m)
+	m.SetHasTurnPassed(true)
+
+	friendlyTeam := g.GetTeamOfMonster(m)
+	aliveFriendlyMonsters := friendlyTeam.GetAliveMonsters()
+	enemyTeam := g.GetEnemyTeamOfMonster()
+	aliveEnemyMonsters := enemyTeam.GetAliveMonsters()
+
+	// Redemption
+	if m.HasAbility(ABILITY_REDEMPTION) {
+		for _, e := range aliveEnemyMonsters {
+			utils.HitMonsterWithPhysical(
+				g,
+				e,
+				utils.REDEMPTION_DAMAGE,
+			)
+
+			g.ProcessIfDead(e)
+		}
+	}
+
+	// Ressurect
+	friendlySummoner := friendlyTeam.GetSummoner()
+	// summoner resurrect
+	wasResurrected := g.ProcessIfResurrect(&friendlySummoner, m)
+	// friendly monster resurrect
+	for _, friendlyMonster := range aliveFriendlyMonsters {
+		if wasResurrected {
+			break
+		}
+		wasResurrected = g.ProcessIfResurrect(&friendlyMonster, m)
+	}
+
+	// remove debuffs and buffs if not resurrected
+	if !wasResurrected {
+		// remove debuffs from the enemy team
+		monsterDebuffs := utils.MonsterHasDebuffAbilities(m)
+		g.RemoveMonsterDebuff(m, monsterDebuffs, aliveEnemyMonsters)
+
+		// remove buffs from the friendly monsters
+		monsterBuffs := utils.MonsterHasBuffsAbilities(m)
+		g.RemoveMonsterBuff(m, monsterBuffs, aliveFriendlyMonsters)
+	}
+
+	// handle scavenger & battle log
+	for _, fm := range aliveFriendlyMonsters {
+		g.OnMonsterDeath(fm, m)
+	}
+	for _, em := range aliveEnemyMonsters {
+		g.OnMonsterDeath(em, m)
+	}
+
+	if !wasResurrected {
+		friendlyTeam.MaybeSetLastStand()
+	}
 }
 
 // TODO
@@ -299,4 +366,53 @@ func (g *Game) PlaySingleRound() {
 // TODO
 func (g *Game) DoPostRound() {
 
+}
+
+// TODO
+func (g *Game) GetTeamOfMonster(m MonsterCard) GameTeam {
+
+	return GameTeam{}
+}
+
+// TODO
+func (g *Game) GetEnemyTeamOfMonster(m MonsterCard) GameTeam {
+	return GameTeam{}
+}
+
+// TODO Returns true if resurrected, false otherwise
+func (g *Game) ProcessIfResurrect(caster GameCardInterface, deadMonster MonsterCard) bool {
+	return false
+}
+
+func (g *Game) RemoveMonsterDebuff(m MonsterCard, debuffs []Ability, enemyMonsters []MonsterCard) {
+	if len(debuffs) == 0 {
+		return
+	}
+
+	for _, debuff := range debuffs {
+		for _, enemy := range enemyMonsters {
+			enemy.RemoveDebuff(debuff)
+		}
+	}
+}
+
+func (g *Game) RemoveMonsterBuff(m MonsterCard, buffs []Ability, friendlyMonsters []MonsterCard) {
+	if len(buffs) == 0 {
+		return
+	}
+
+	for _, buff := range buffs {
+		for _, friendlyMonster := range friendlyMonsters {
+			friendlyMonster.RemoveBuff(buff)
+		}
+	}
+}
+
+// Handle scavenger and battle log
+func (g *Game) OnMonsterDeath(m MonsterCard, deadMonster MonsterCard) {
+	// Scavenger
+	if m.HasAbility(ABILITY_SCAVENGER) {
+		m.AddBuff(ABILITY_SCAVENGER)
+		g.CreateAndAddBattleLog(BATTLE_ACTION_SCAVENGER, &m, &deadMonster, 1)
+	}
 }

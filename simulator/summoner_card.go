@@ -82,8 +82,8 @@ func (c *SummonerCard) GetBuffs() map[Ability]int {
 	return c.BuffMap
 }
 
-func (c *SummonerCard) Clone() SummonerCard {
-	clonedCard := SummonerCard{
+func (c *SummonerCard) Clone() GameCardInterface {
+	var clonedCard GameCardInterface = &SummonerCard{
 		cardDetail: c.cardDetail,
 		GameCard: GameCard{
 			CardLevel:      c.CardLevel,

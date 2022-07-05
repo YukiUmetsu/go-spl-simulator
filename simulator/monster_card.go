@@ -158,8 +158,8 @@ func (c *MonsterCard) SetHasTurnPassed(hasTurnPassed bool) {
 	c.hasTurnPassed = hasTurnPassed
 }
 
-func (c *MonsterCard) Clone() MonsterCard {
-	clonedCard := MonsterCard{
+func (c *MonsterCard) Clone() GameCardInterface {
+	var clonedCard GameCardInterface = &MonsterCard{
 		cardDetail: c.cardDetail,
 		GameCard: GameCard{
 			CardLevel:      c.CardLevel,
@@ -439,6 +439,46 @@ func (c *MonsterCard) GetPostAbilityMaxArmor() int {
 	}
 
 	return utils.GetBigger(postArmor+armorModifier, 0)
+}
+
+func (c *MonsterCard) RemoveBuff(buff Ability) {
+	if !c.HasBuff(buff) {
+		return
+	}
+
+	newBufCount := c.GetBuffCount(buff) - 1
+	if newBufCount == 0 {
+		// remove buff key from the map
+		delete(c.BuffMap, buff)
+	} else {
+		c.BuffMap[buff] = newBufCount
+	}
+
+	// TODO: comeback and check the validity of this code because of the rule
+	if buff == ABILITY_SCAVENGER {
+		c.RemoveBuffHealth(1)
+	} else if buff == ABILITY_LIFE_LEECH {
+		c.RemoveBuffHealth(1)
+	} else if buff == ABILITY_STRENGTHEN {
+		c.RemoveStrengthenHealth(1)
+	} else if buff == ABILITY_PROTECT {
+		c.Armor = utils.GetSmaller(c.GetPostAbilityMaxArmor(), c.Armor)
+	}
+}
+
+// TODO: comeback and check the validity of this code because of the rule
+func (c *MonsterCard) RemoveStrengthenHealth(healthAmount int) {
+	if c.Health < c.GetPostAbilityMaxHealth() {
+		c.RemoveBuffHealth(healthAmount)
+	}
+}
+
+// TODO: comeback and check the validity of this code because of the rule
+func (c *MonsterCard) RemoveBuffHealth(healthAmount int) {
+	if c.Health < 1 {
+		return
+	}
+	c.Health = utils.GetBigger(c.Health-healthAmount, 1)
 }
 
 func (c *MonsterCard) RemoveDebuff(debuff Ability) {

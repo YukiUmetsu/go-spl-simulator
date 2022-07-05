@@ -2,7 +2,7 @@ package simulator
 
 type GameCardInterface interface {
 	SetTeam(TeamNumber)
-	HasAbility(ability Ability)
+	HasAbility(ability Ability) bool
 	RemoveAbility(ability Ability)
 	GetTeamNumber() TeamNumber
 	GetRarity() int
@@ -10,7 +10,7 @@ type GameCardInterface interface {
 	GetLevel() int
 	GetDebuffs() map[Ability]int
 	GetBuffs() map[Ability]int
-	// Clone() GameCardInterface
+	Clone() GameCardInterface
 }
 
 type GameCard struct {

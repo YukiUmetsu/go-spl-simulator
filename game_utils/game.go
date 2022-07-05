@@ -99,3 +99,17 @@ func RandomTieBreaker() int {
 	}
 	return 1
 }
+
+func CardsArrIncludesMonster(cards []sim.MonsterCard, m sim.MonsterCard) bool {
+	if len(cards) == 0 {
+		return false
+	}
+
+	for _, c := range cards {
+		if c.GameCard.Name == m.GameCard.Name {
+			return true
+		}
+	}
+
+	return false
+}
