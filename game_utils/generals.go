@@ -9,6 +9,15 @@ func Remove[T comparable](l []T, item T) []T {
     return l
 }
 
+func Contains[T comparable](s []T, e T) bool {
+    for _, a := range s {
+        if a == e {
+            return true
+        }
+    }
+    return false
+}
+
 func GetBigger[T comparable](a T, b T) T {
     if (a > b) {
         return a

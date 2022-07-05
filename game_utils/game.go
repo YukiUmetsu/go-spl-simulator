@@ -113,3 +113,20 @@ func CardsArrIncludesMonster(cards []sim.MonsterCard, m sim.MonsterCard) bool {
 
 	return false
 }
+
+// https://support.splinterlands.com/hc/en-us/articles/4414334269460-Attack-Order
+func MonsterTurnComparator(m1 sim.Monster, m2 sim.Monster) bool {
+	normalCompareDiff := NormalCompareAttackOrder(m1, m2)
+
+	// Descending order
+	if normalCompareDiff != 0 {
+		return normalCompareDiff > 0
+	}
+
+	// resolve tie by order if the same team, else random
+	if m1.GetTeamNumber() == m2.GetTeamNumber() {
+		return ResolveFriendlyTies(m1, m2) > 0
+	} else {
+		return RandomTieBreaker() > 0
+	}
+}

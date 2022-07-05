@@ -102,3 +102,42 @@ func MonsterHasBuffsAbilities(m sim.MonsterCard) []sim.Ability {
 	}
 	return monsterBuffs
 }
+
+func RepairMonsterArmor(m sim.MonsterCard) int {
+	if m == nil {
+		return 0
+	}
+	previousArmor := m.Armor
+	maxArmor := m.GetPostAbilityMaxArmor()
+	newArmorAmount := GetSmaller(maxArmor, (m.Armor + sim.REPAIR_AMOUNT))
+	m.Armor = newArmorAmount
+	return newArmorAmount - previousArmor
+}
+
+func TankHealMonster(m sim.MonsterCard) int {
+	if m == nil {
+		return 0
+	}
+	if m.HasDebuff(ABILITY_AFFLICTION) {
+		return 0
+	}
+	previousHealth := m.Health
+	maxHealth := m.GetPostAbilityMaxHealth()
+	healAmount := int(math.Floor(float64(maxHealth) * TANK_HEAL_MULTIPLIER))
+	healAmount = GetBigger(healAmount, 2)
+	m.AddHealth(healAmount)
+	return m.Health - previousHealth
+}
+
+func TriageHealMonster(m sim.MonsterCard) int {
+	if m == nil || m.HasDebuff(ABILITY_AFFLICTION) {
+		return 0
+	}
+
+	previousHealth := m.Health
+	maxHealth := m.GetPostAbilityMaxHealth()
+	healAmount := int(math.Floor(float64(maxHealth) * TRIAGE_HEAL_MULTIPLIER))
+	healAmount = GetBigger(healAmount, MINIMUM_TRIAGE_HEAL)
+	m.AddHealth(healAmount)
+	return m.Health - previousHealth
+}

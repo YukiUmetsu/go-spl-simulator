@@ -3,6 +3,7 @@ package simulator
 import (
 	"errors"
 	utils "game_utils"
+	"sort"
 )
 
 type Game struct {
@@ -258,7 +259,7 @@ func (g *Game) FatigueMonsters(roundNumber int) {
 	}
 }
 
-func (g *Game) CreateAndAddBattleLog(action AdditionalBattleAction, cardOne *MonsterCard, cardTwo *MonsterCard, value int) {
+func (g *Game) CreateAndAddBattleLog(action AdditionalBattleAction, cardOne GameCardInterface, cardTwo GameCardInterface, value int) {
 	if !g.shouldLog {
 		return
 	}
@@ -358,8 +359,130 @@ func (g *Game) ProcessIfDead(m MonsterCard) {
 	}
 }
 
-// TODO
+/**
+* Plays a single round
+* 1. Summoners do their pre round abilities.
+* 2. Get turn order of monsters
+* 3. For each monster, check if alive then
+* 3a. Do onPreTurn
+* 3b. Get target, continue to next monster if no attack
+* 3c. Attack target
+* 3d. Resolve damage, check if dead monsters
+* 3e. (If dead) Trigger onDeath on all alive monsters and summoners
+ */
 func (g *Game) PlaySingleRound() {
+	// pre round buffs etc
+	g.CreateAndAddBattleLog(BATTLE_ACTION_ROUND_START, nil, nil, g.roundNumber+1)
+	g.deadMonsters = []MonsterCard{}
+	g.DoGamePreRound()
+	g.DoSummonerPreRound(g.team1)
+	g.DoSummonerPreRound(g.team2)
+
+	// loop through each monster's turn
+	stunnedMonsters := []MonsterCard{}
+	currentMonster := g.GetNextMonsterTurn()
+	for currentMonster != nil {
+		if !currentMonster.IsAlive() {
+			continue
+		}
+
+		// check stun
+		if currentMonster.HasDebuff(ABILITY_STUN) {
+			stunnedMonsters = append(stunnedMonsters, *currentMonster)
+			currentMonster.SetHasTurnPassed(true)
+			currentMonster = g.GetNextMonsterTurn()
+			continue
+		}
+
+		// handle monster attack
+		g.DoMonsterPreTurn(currentMonster)
+		g.ResolveAttackForMonster(currentMonster)
+		if currentMonster.HasAbility(ABILITY_DOUBLE_STRIKE) {
+			g.ResolveAttackForMonster(currentMonster)
+		}
+
+		currentMonster = g.GetNextMonsterTurn()
+	}
+
+	// remove stun state
+	for _, sm := range stunnedMonsters {
+		sm.RemoveAllDebuff(ABILITY_STUN)
+	}
+}
+
+func (g *Game) DoGamePreRound() {
+	// Add pre round actions when necessary
+}
+
+// Handle Summoner's pre turn actions (e.g. cleanse, tank heal, repair, triage)
+func (g *Game) DoSummonerPreRound(t GameTeam) {
+	summoner := t.GetSummoner()
+
+	// Cleanse
+	if summoner.HasAbility(ABILITY_CLEANSE) {
+		firstMonster := t.GetFirstAliveMonster()
+		firstMonster.CleanseDebuffs()
+		g.CreateAndAddBattleLog(BATTLE_ACTION_CLEANSE, &summoner, firstMonster, 0)
+	}
+
+	// Repair
+	if summoner.HasAbility(ABILITY_REPAIR) {
+		repairTarget := t.GetRepairTarget()
+		if repairTarget != nil {
+			utils.RepairMonsterArmor(repairTarget)
+			g.CreateAndAddBattleLog(BATTLE_ACTION_REPAIR, &summoner, repairTarget, 0)
+		}
+	}
+
+	// Tank heal
+	if summoner.HasAbility(ABILITY_TANK_HEAL) {
+		firstMonster := t.GetFirstAliveMonster()
+		utils.TankHealMonster(firstMonster)
+		g.CreateAndAddBattleLog(BATTLE_ACTION_TANK_HEAL, &summoner, firstMonster, 0)
+	}
+
+	// Triage
+	if summoner.HasAbility(ABILITY_TRIAGE) {
+		healTarget := t.GetTriageHealTarget()
+		if healTarget != nil {
+			healAmount := utils.TriageHealMonster(healTarget)
+			g.CreateAndAddBattleLog(BATTLE_ACTION_TANK_HEAL, &summoner, healTarget, healAmount)
+		}
+	}
+}
+
+// TODO Test
+func (g *Game) GetNextMonsterTurn() *MonsterCard {
+	allUnmovedMonsters := append(g.team1.GetUnmovedMonsters(), g.team2.GetUnmovedMonsters()...)
+	if len(allUnmovedMonsters) == 0 {
+		return nil
+	}
+
+	// sort unmoved monsters
+	sort.SliceStable(allUnmovedMonsters, utils.MonsterTurnComparator)
+
+	if utils.Contains(g.rulesets, RULESET_REVERSE_SPEED) {
+		return allUnmovedMonsters[0]
+	}
+
+	return allUnmovedMonsters[len(allUnmovedMonsters)-1]
+}
+
+// TODO
+func (g *Game) DoMonsterPreTurn(m *MonsterCard) {
+	m.SetHasTurnPasses(true)
+	friendlyTeam := g.GetTeamOfMonster(m)
+
+	// Cleanse
+	if m.HasAbility(ABILITY_CLEANSE) {
+		cleanseTarget := friendlyTeam.GetFirstAliveMonster()
+		cleanseTarget.CleanseDebuffs()
+		g.CreateAndAddBattleLog(ABILITY_CLEANSE, &m, cleanseTarget, 0)
+	}
+}
+
+// TODO
+func (g *Game) ResolveAttackForMonster(m *MonsterCard) {
 
 }
 
