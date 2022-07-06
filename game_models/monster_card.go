@@ -1,8 +1,9 @@
-package simulator
+package game_models
 
 import (
-	utils "game_utils"
 	"math"
+
+	utils "github.com/YukiUmetsu/go-spl-simulator/game_utils"
 )
 
 type MonsterCard struct {
@@ -108,13 +109,13 @@ func (c *MonsterCard) AddBuff(buff Ability) {
 	c.BuffMap[buff] = buffsAmount
 
 	if buff == ABILITY_SCAVENGER {
-		utils.ScavengerMonster(c)
+		ScavengerMonster(c)
 	} else if buff == ABILITY_LIFE_LEECH {
-		utils.LifeLeechMonster(c)
+		LifeLeechMonster(c)
 	} else if buff == ABILITY_STRENGTHEN {
-		utils.StrengthenMonster(c)
+		StrengthenMonster(c)
 	} else if buff == ABILITY_PROTECT {
-		utils.ProtectMonster(c)
+		ProtectMonster(c)
 	}
 }
 
@@ -124,7 +125,7 @@ func (c *MonsterCard) AddDebuff(debuff Ability) {
 	}
 
 	// the card has immunity and it's not an uncleansable debuff => ignore
-	uncleansableBuffs := utils.GetUncleansableDebuffs()
+	uncleansableBuffs := GetUncleansableDebuffs()
 	if utils.StrArrContains(c.GameCard.Abilities, ABILITY_IMMUNITY) && !utils.StrArrContains(uncleansableBuffs, debuff) {
 		return
 	}
@@ -135,9 +136,9 @@ func (c *MonsterCard) AddDebuff(debuff Ability) {
 	}
 
 	if debuff == ABILITY_WEAKEN {
-		utils.WeakenMonster(c)
+		WeakenMonster(c)
 	} else if debuff == ABILITY_RUST {
-		utils.RustMonster(c)
+		RustMonster(c)
 	}
 
 	var debuffAmount int

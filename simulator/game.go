@@ -2,6 +2,7 @@ package simulator
 
 import (
 	"errors"
+	. "game_models"
 	utils "game_utils"
 	"sort"
 )
@@ -478,6 +479,21 @@ func (g *Game) DoMonsterPreTurn(m *MonsterCard) {
 		cleanseTarget := friendlyTeam.GetFirstAliveMonster()
 		cleanseTarget.CleanseDebuffs()
 		g.CreateAndAddBattleLog(ABILITY_CLEANSE, &m, cleanseTarget, 0)
+	}
+
+	// Tank heal
+	if m.HasAbility(ABILITY_TANK_HEAL) {
+		tankHealTarget := friendlyTeam.GetFirstAliveMonster()
+		healAmount := utils.TankHealMonster(tankHealTarget)
+		g.CreateAndAddBattleLog(BATTLE_ACTION_TANK_HEAL, m, tankHealTarget, healAmount)
+	}
+
+	// Repair
+	if m.HasAbility(ABILITY_REPAIR) {
+		repairTarget := friendlyTeam.GetRepairTarget()
+		if repairTarget {
+			repairAmount = utils.RepairMonsterArmor(repairTarget)
+		}
 	}
 }
 

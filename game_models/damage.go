@@ -1,8 +1,7 @@
-package game_utils
+package game_models
 
 import (
 	"math"
-	sim "simulator"
 )
 
 // TODO: Should this return the reduced damage or normal? Life steal against void?

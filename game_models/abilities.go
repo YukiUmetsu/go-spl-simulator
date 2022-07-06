@@ -1,88 +1,88 @@
-package game_utils
+package game_models
 
 import (
-	sim "simulator"
+	"math"
 )
 
 /** Abilities that summoner applies to friendly team at the start of the game */
-func GetSummonerAbilityAbilities() []sim.Ability {
-	return []sim.Ability{
-		sim.ABILITY_BLAST,
-		sim.ABILITY_DIVINE_SHIELD,
-		sim.ABILITY_FLYING,
-		sim.ABILITY_LAST_STAND,
-		sim.ABILITY_MAGIC_REFLECT,
-		sim.ABILITY_PIERCING,
-		sim.ABILITY_RETURN_FIRE,
-		sim.ABILITY_SNARE,
-		sim.ABILITY_THORNS,
-		sim.ABILITY_TRUE_STRIKE,
-		sim.ABILITY_VOID,
-		sim.ABILITY_VOID_ARMOR,
-		sim.POISON,
+func GetSummonerAbilityAbilities() []Ability {
+	return []Ability{
+		ABILITY_BLAST,
+		ABILITY_DIVINE_SHIELD,
+		ABILITY_FLYING,
+		ABILITY_LAST_STAND,
+		ABILITY_MAGIC_REFLECT,
+		ABILITY_PIERCING,
+		ABILITY_RETURN_FIRE,
+		ABILITY_SNARE,
+		ABILITY_THORNS,
+		ABILITY_TRUE_STRIKE,
+		ABILITY_VOID,
+		ABILITY_VOID_ARMOR,
+		POISON,
 	}
 }
 
 /** Buffs that summoner applies to friendly team at the start of the game */
-func GetSummonerPreGameBuffAbilities() []sim.Ability {
-	return []sim.Ability{
-		sim.ABILITY_STRENGTHEN,
+func GetSummonerPreGameBuffAbilities() []Ability {
+	return []Ability{
+		ABILITY_STRENGTHEN,
 	}
 }
 
 /** Abilities that summoner applies to enemy team at the start of the game */
-func GetSummonerPreGameDebuffAbilities() []sim.Ability {
-	return []sim.Ability{
-		sim.ABILITY_AFFLICTION,
-		sim.ABILITY_BLIND,
+func GetSummonerPreGameDebuffAbilities() []Ability {
+	return []Ability{
+		ABILITY_AFFLICTION,
+		ABILITY_BLIND,
 	}
 }
 
 /** Abilities that monsters apply to friendly team at the start of the game */
-func GetMonsterPreGameBuffAbilities() []sim.Ability {
-	return []sim.Ability{
-		sim.ABILITY_PROTECT,
-		sim.ABILITY_STRENGTHEN,
-		sim.ABILITY_SWIFTNESS,
-		sim.ABILITY_INSPIRE,
+func GetMonsterPreGameBuffAbilities() []Ability {
+	return []Ability{
+		ABILITY_PROTECT,
+		ABILITY_STRENGTHEN,
+		ABILITY_SWIFTNESS,
+		ABILITY_INSPIRE,
 	}
 }
 
 /** Abilities that monsters apply to enemy team at the start of the game */
-func GetMonsterPreGameDebuffAbilities() []sim.Ability {
-	return []sim.Ability{
-		sim.ABILITY_AMPLIFY,
-		sim.ABILITY_BLIND,
-		sim.ABILITY_DEMORALIZE,
-		sim.ABILITY_HEADWINDS,
-		sim.ABILITY_RUST,
-		sim.ABILITY_SLOW,
-		sim.ABILITY_SNARE,
-		sim.ABILITY_SILENCE,
-		sim.ABILITY_WEAKEN,
+func GetMonsterPreGameDebuffAbilities() []Ability {
+	return []Ability{
+		ABILITY_AMPLIFY,
+		ABILITY_BLIND,
+		ABILITY_DEMORALIZE,
+		ABILITY_HEADWINDS,
+		ABILITY_RUST,
+		ABILITY_SLOW,
+		ABILITY_SNARE,
+		ABILITY_SILENCE,
+		ABILITY_WEAKEN,
 	}
 }
 
 /**
  * Abilities that can't be cleansed. (These aren't actually debuffs but this app codes them as a debuff)
  */
-func GetUncleansableDebuffs() []sim.Ability {
-	return []sim.Ability{
-		sim.ABILITY_AMPLIFY,
+func GetUncleansableDebuffs() []Ability {
+	return []Ability{
+		ABILITY_AMPLIFY,
 	}
 }
 
 /** Abilities that require a turn to do something */
-func GetActionAbilities() []sim.Ability {
-	return []sim.Ability{
-		sim.ABILITY_REPAIR,
-		sim.ABILITY_TANK_HEAL,
+func GetActionAbilities() []Ability {
+	return []Ability{
+		ABILITY_REPAIR,
+		ABILITY_TANK_HEAL,
 	}
 }
 
 /* Check if the monster has pre-game debuff abilities. If so, return those debuffs, otherwise empty array */
-func MonsterHasDebuffAbilities(m sim.MonsterCard) []sim.Ability {
-	monsterDebuffs := []sim.Ability{}
+func MonsterHasDebuffAbilities(m MonsterCard) []Ability {
+	monsterDebuffs := []Ability{}
 	debuffs := GetMonsterPreGameDebuffAbilities()
 	for _, ability := range m.GameCard.Abilities {
 		if StrArrContains(debuffs, ability) {
@@ -92,8 +92,8 @@ func MonsterHasDebuffAbilities(m sim.MonsterCard) []sim.Ability {
 	return monsterDebuffs
 }
 
-func MonsterHasBuffsAbilities(m sim.MonsterCard) []sim.Ability {
-	monsterBuffs := []sim.Ability{}
+func MonsterHasBuffsAbilities(m MonsterCard) []Ability {
+	monsterBuffs := []Ability{}
 	buffs := GetMonsterPreGameBuffAbilities()
 	for _, ability := range m.GameCard.Abilities {
 		if StrArrContains(buffs, ability) {
@@ -103,18 +103,18 @@ func MonsterHasBuffsAbilities(m sim.MonsterCard) []sim.Ability {
 	return monsterBuffs
 }
 
-func RepairMonsterArmor(m sim.MonsterCard) int {
+func RepairMonsterArmor(m MonsterCard) int {
 	if m == nil {
 		return 0
 	}
 	previousArmor := m.Armor
 	maxArmor := m.GetPostAbilityMaxArmor()
-	newArmorAmount := GetSmaller(maxArmor, (m.Armor + sim.REPAIR_AMOUNT))
+	newArmorAmount := GetSmaller(maxArmor, (m.Armor + REPAIR_AMOUNT))
 	m.Armor = newArmorAmount
 	return newArmorAmount - previousArmor
 }
 
-func TankHealMonster(m sim.MonsterCard) int {
+func TankHealMonster(m MonsterCard) int {
 	if m == nil {
 		return 0
 	}
@@ -129,7 +129,7 @@ func TankHealMonster(m sim.MonsterCard) int {
 	return m.Health - previousHealth
 }
 
-func TriageHealMonster(m sim.MonsterCard) int {
+func TriageHealMonster(m MonsterCard) int {
 	if m == nil || m.HasDebuff(ABILITY_AFFLICTION) {
 		return 0
 	}

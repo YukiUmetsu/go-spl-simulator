@@ -1,50 +1,49 @@
-package game_utils
+package game_models
 
 import (
 	"math"
 	"math/rand"
-	sim "simulator"
 )
 
-func GetDidDodge(rulesets sim.Ruleset, attacker sim.MonsterCard, target sim.MonsterCard, attackType sim.AttackType) bool {
+func GetDidDodge(rulesets Ruleset, attacker MonsterCard, target MonsterCard, attackType AttackType) bool {
 	// true strike
-	if attacker.HasAbility(sim.ABILITY_TRUE_STRIKE) {
+	if attacker.HasAbility(ABILITY_TRUE_STRIKE) {
 		return false
 	}
 
 	// magic always hits except phase
-	if attackType == sim.AttackType.Magic && !target.HasAbility(sim.ABILITY_PHASE) {
+	if attackType == AttackType.Magic && !target.HasAbility(ABILITY_PHASE) {
 		return false
 	}
 
 	// snare to flying
-	if attacker.HasAbility(sim.ABILITY_SNARE) && target.HasAbility(sim.ABILITY_FLYING) {
+	if attacker.HasAbility(ABILITY_SNARE) && target.HasAbility(ABILITY_FLYING) {
 		return false
 	}
 
 	// calculate dodge chance from speed difference
 	speedDiff := target.GetPostAbilitySpeed() - attacker.GetPostAbilitySpeed()
-	if StrArrContains(rulesets, sim.Ruleset.RULESET_REVERSE_SPEED) {
+	if StrArrContains(rulesets, Ruleset.RULESET_REVERSE_SPEED) {
 		speedDiff = -1 * speedDiff
 	}
 	var dodgeChance float64 = 0
 	if speedDiff > 0 {
-		dodgeChance = float64(speedDiff) * sim.SPEED_DODGE_CHANCE
+		dodgeChance = float64(speedDiff) * SPEED_DODGE_CHANCE
 	}
 
 	// add dodge ability 25% chance to evade
-	if target.HasAbility(sim.ABILITY_DODGE) {
-		dodgeChance = dodgeChance + sim.DODGE_CHANCE
+	if target.HasAbility(ABILITY_DODGE) {
+		dodgeChance = dodgeChance + DODGE_CHANCE
 	}
 
 	// add flying ability 25% chance to evade (if attacker doesn't have flying and snare)
-	if target.HasAbility(sim.ABILITY_FLYING) && !attacker.HasAbility(sim.ABILITY_FLYING) && !target.HasDebuff(sim.ABILITY_SNARE) {
-		dodgeChance = dodgeChance + sim.FLYING_DODGE_CHANCE
+	if target.HasAbility(ABILITY_FLYING) && !attacker.HasAbility(ABILITY_FLYING) && !target.HasDebuff(ABILITY_SNARE) {
+		dodgeChance = dodgeChance + FLYING_DODGE_CHANCE
 	}
 
 	// +15% if attacker has blind
-	if attacker.HasDebuff(sim.ABILITY_BLIND) {
-		dodgeChance = dodgeChance + sim.BLIND_DODGE_CHANCE
+	if attacker.HasDebuff(ABILITY_BLIND) {
+		dodgeChance = dodgeChance + BLIND_DODGE_CHANCE
 	}
 	return GetSuccessBelow(dodgeChance * 100)
 }
@@ -55,7 +54,7 @@ func GetSuccessBelow(chance float64) bool {
 
 // Compare Attack Order
 // https://support.splinterlands.com/hc/en-us/articles/4414334269460-Attack-Order
-func NormalCompareAttackOrder(m1 sim.MonsterCard, m2 sim.MonsterCard) int {
+func NormalCompareAttackOrder(m1 MonsterCard, m2 MonsterCard) int {
 	speedDiff := m1.GetPostAbilitySpeed() - m2.GetPostAbilitySpeed()
 	if speedDiff != 0 {
 		return speedDiff
@@ -80,7 +79,7 @@ func NormalCompareAttackOrder(m1 sim.MonsterCard, m2 sim.MonsterCard) int {
 	return m1.GetLevel() - m2.GetLevel()
 }
 
-func ResolveFriendlyTies(m1 sim.MonsterCard, m2 sim.MonsterCard) int {
+func ResolveFriendlyTies(m1 MonsterCard, m2 MonsterCard) int {
 	m1Position := m1.GetCardPosition()
 	m2Position := m2.GetCardPosition()
 	if !m1.HasAction() && !m2.HasAction() {
@@ -100,7 +99,7 @@ func RandomTieBreaker() int {
 	return 1
 }
 
-func CardsArrIncludesMonster(cards []sim.MonsterCard, m sim.MonsterCard) bool {
+func CardsArrIncludesMonster(cards []MonsterCard, m MonsterCard) bool {
 	if len(cards) == 0 {
 		return false
 	}
@@ -115,7 +114,7 @@ func CardsArrIncludesMonster(cards []sim.MonsterCard, m sim.MonsterCard) bool {
 }
 
 // https://support.splinterlands.com/hc/en-us/articles/4414334269460-Attack-Order
-func MonsterTurnComparator(m1 sim.Monster, m2 sim.Monster) bool {
+func MonsterTurnComparator(m1 Monster, m2 Monster) bool {
 	normalCompareDiff := NormalCompareAttackOrder(m1, m2)
 
 	// Descending order

@@ -1,7 +1,7 @@
-package simulator
+package game_models
 
 import (
-	utils "game_utils"
+	utils "github.com/YukiUmetsu/go-spl-simulator/game_utils"
 )
 
 type SummonerCard struct {

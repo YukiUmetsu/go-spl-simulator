@@ -1,4 +1,4 @@
-package simulator
+package game_models
 
 type GameCardInterface interface {
 	SetTeam(TeamNumber)
