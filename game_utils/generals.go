@@ -1,7 +1,7 @@
 package game_utils
 
 import (
-    "golang.org/x/exp"
+    "golang.org/x/exp/constraints"
 )
 
 func Remove[T comparable](l []T, item T) []T {

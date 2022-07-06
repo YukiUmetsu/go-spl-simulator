@@ -2,6 +2,8 @@ package game_models
 
 import (
 	"math"
+
+	utils "github.com/YukiUmetsu/go-spl-simulator/game_utils"
 )
 
 /** Abilities that summoner applies to friendly team at the start of the game */
@@ -19,7 +21,7 @@ func GetSummonerAbilityAbilities() []Ability {
 		ABILITY_TRUE_STRIKE,
 		ABILITY_VOID,
 		ABILITY_VOID_ARMOR,
-		POISON,
+		ABILITY_POISON,
 	}
 }
 
@@ -85,7 +87,7 @@ func MonsterHasDebuffAbilities(m MonsterCard) []Ability {
 	monsterDebuffs := []Ability{}
 	debuffs := GetMonsterPreGameDebuffAbilities()
 	for _, ability := range m.GameCard.Abilities {
-		if StrArrContains(debuffs, ability) {
+		if utils.Contains(debuffs, ability) {
 			monsterDebuffs = append(monsterDebuffs, ability)
 		}
 	}
@@ -96,25 +98,25 @@ func MonsterHasBuffsAbilities(m MonsterCard) []Ability {
 	monsterBuffs := []Ability{}
 	buffs := GetMonsterPreGameBuffAbilities()
 	for _, ability := range m.GameCard.Abilities {
-		if StrArrContains(buffs, ability) {
+		if utils.Contains(buffs, ability) {
 			monsterBuffs = append(monsterBuffs, ability)
 		}
 	}
 	return monsterBuffs
 }
 
-func RepairMonsterArmor(m MonsterCard) int {
+func RepairMonsterArmor(m *MonsterCard) int {
 	if m == nil {
 		return 0
 	}
 	previousArmor := m.Armor
 	maxArmor := m.GetPostAbilityMaxArmor()
-	newArmorAmount := GetSmaller(maxArmor, (m.Armor + REPAIR_AMOUNT))
+	newArmorAmount := utils.GetSmaller(maxArmor, (m.Armor + REPAIR_AMOUNT))
 	m.Armor = newArmorAmount
 	return newArmorAmount - previousArmor
 }
 
-func TankHealMonster(m MonsterCard) int {
+func TankHealMonster(m *MonsterCard) int {
 	if m == nil {
 		return 0
 	}
@@ -124,12 +126,12 @@ func TankHealMonster(m MonsterCard) int {
 	previousHealth := m.Health
 	maxHealth := m.GetPostAbilityMaxHealth()
 	healAmount := int(math.Floor(float64(maxHealth) * TANK_HEAL_MULTIPLIER))
-	healAmount = GetBigger(healAmount, 2)
+	healAmount = utils.GetBigger(healAmount, 2)
 	m.AddHealth(healAmount)
 	return m.Health - previousHealth
 }
 
-func TriageHealMonster(m MonsterCard) int {
+func TriageHealMonster(m *MonsterCard) int {
 	if m == nil || m.HasDebuff(ABILITY_AFFLICTION) {
 		return 0
 	}
@@ -137,7 +139,46 @@ func TriageHealMonster(m MonsterCard) int {
 	previousHealth := m.Health
 	maxHealth := m.GetPostAbilityMaxHealth()
 	healAmount := int(math.Floor(float64(maxHealth) * TRIAGE_HEAL_MULTIPLIER))
-	healAmount = GetBigger(healAmount, MINIMUM_TRIAGE_HEAL)
+	healAmount = utils.GetBigger(healAmount, MINIMUM_TRIAGE_HEAL)
 	m.AddHealth(healAmount)
 	return m.Health - previousHealth
+}
+
+func RustMonster(m *MonsterCard) {
+	if m == nil {
+		return
+	}
+	m.Armor = utils.GetBigger(0, m.Armor-RUST_AMOUNT)
+}
+
+func ScavengerMonster(m *MonsterCard) {
+	if m == nil {
+		return
+	}
+	m.AddHealth(1)
+}
+
+func LifeLeechMonster(m *MonsterCard) {
+	if m == nil {
+		return
+	}
+	m.AddHealth(1)
+}
+
+func StrengthenMonster(m *MonsterCard) {
+	if m == nil {
+		return
+	}
+	m.AddHealth(1)
+}
+
+func ProtectMonster(m *MonsterCard) {
+	if m == nil {
+		return
+	}
+	m.Armor = m.Armor + PROTECT_AMOUNT
+}
+
+func WeakenMonster(m *MonsterCard) {
+	m.Health = utils.GetBigger(m.Health-1, 1)
 }

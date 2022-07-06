@@ -71,6 +71,10 @@ func (c *MonsterCard) RemoveAbility(ability Ability) {
 	c.Abilities = utils.Remove(c.Abilities, ability)
 }
 
+func (c *MonsterCard) RemoveAllAbilities() {
+	c.Abilities = []Ability{}
+}
+
 func (c *MonsterCard) GetTeamNumber() TeamNumber {
 	return c.Team
 }
@@ -126,7 +130,7 @@ func (c *MonsterCard) AddDebuff(debuff Ability) {
 
 	// the card has immunity and it's not an uncleansable debuff => ignore
 	uncleansableBuffs := GetUncleansableDebuffs()
-	if utils.StrArrContains(c.GameCard.Abilities, ABILITY_IMMUNITY) && !utils.StrArrContains(uncleansableBuffs, debuff) {
+	if utils.Contains(c.GameCard.Abilities, ABILITY_IMMUNITY) && !utils.Contains(uncleansableBuffs, debuff) {
 		return
 	}
 
@@ -209,6 +213,10 @@ func (c *MonsterCard) SetCardPosition(position int) {
 	c.cardPosition = position
 }
 
+func (c *MonsterCard) GetCardPosition() int {
+	return c.cardPosition
+}
+
 func (c *MonsterCard) IsAlive() bool {
 	return c.GameCard.Health >= 0
 }
@@ -228,7 +236,8 @@ func (c *MonsterCard) AddHealth(amount int) {
 }
 
 func (c *MonsterCard) HasBuff(buff Ability) bool {
-	return utils.StrArrContains(c.GameCard.BuffMap, buff)
+	_, ok := c.GameCard.BuffMap[buff]
+	return ok
 }
 
 func (c *MonsterCard) GetBuffCount(buff Ability) int {
@@ -239,8 +248,9 @@ func (c *MonsterCard) GetBuffCount(buff Ability) int {
 	}
 }
 
-func (c *MonsterCard) HasDebuff(buff Ability) bool {
-	return utils.StrArrContains(c.GameCard.DebuffMap, buff)
+func (c *MonsterCard) HasDebuff(debuff Ability) bool {
+	_, ok := c.GameCard.DebuffMap[debuff]
+	return ok
 }
 
 func (c *MonsterCard) GetDebuffCount(debuff Ability) int {
@@ -510,7 +520,7 @@ func (c *MonsterCard) CleanseDebuffs() {
 	// Special case, cleanse only removes 1 cripple
 	crippleAmount := c.GetDebuffCount(ABILITY_CRIPPLE)
 	for ability, _ := range c.DebuffMap {
-		if !utils.StrArrContains(utils.GetUncleansableDebuffs(), ability) {
+		if !utils.Contains(GetUncleansableDebuffs(), ability) {
 			c.RemoveAllDebuff(ability)
 		}
 	}
@@ -580,4 +590,13 @@ func (c *MonsterCard) AddSummonerRanged(stat int) {
 
 func (c *MonsterCard) AddSummonerMagic(stat int) {
 	c.summonerMagic = c.summonerMagic + stat
+}
+
+func (c *MonsterCard) RemoveDivineShield() {
+	c.hadDivineShield = true
+	c.RemoveAbility(ABILITY_DIVINE_SHIELD)
+}
+
+func (c *MonsterCard) SetHasTurnPasses(hasPassed bool) {
+	c.hasTurnPassed = hasPassed
 }

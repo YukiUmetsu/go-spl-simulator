@@ -1,56 +1,64 @@
 package game_models
 
-func DoRulesetPreGamePostBuff(rulesets []Ruleset, team1 GameTeam, team2 GameTeam) {
-	if StrArrContains(rulesets, RULESET_ARMORED_UP) {
+import utils "github.com/YukiUmetsu/go-spl-simulator/game_utils"
+
+func DoRulesetPreGameBuff(rulesets []Ruleset, team1 GameTeam, team2 GameTeam) {
+	if utils.Contains(rulesets, RULESET_ARMORED_UP) {
 		ApplyToBothTeamMonsters(team1, team2, ApplyArmorUpRuleset)
 	}
-	if StrArrContains(rulesets, RULESET_BACK_TO_BASICS) {
+	if utils.Contains(rulesets, RULESET_BACK_TO_BASICS) {
 		ApplyToBothTeamMonsters(team1, team2, ApplyBackToBasicsRuleset)
 	}
-	if StrArrContains(rulesets, RULESET_CLOSE_RANGE) {
+	if utils.Contains(rulesets, RULESET_CLOSE_RANGE) {
 		ApplyToBothTeamMonsters(team1, team2, ApplyCloseRangeRuleset)
 	}
-	if StrArrContains(rulesets, RULESET_EQUAL_OPPORTUNITY) {
+	if utils.Contains(rulesets, RULESET_EQUAL_OPPORTUNITY) {
 		ApplyToBothTeamMonsters(team1, team2, ApplyEqualOpportunityRuleset)
 	}
-	if StrArrContains(rulesets, RULESET_EQUALIZER) {
+	if utils.Contains(rulesets, RULESET_EQUALIZER) {
 		ApplyEqualizer(team1, team2)
 	}
-	if StrArrContains(rulesets, RULESET_EXPLOSIVE_WEAPONRY) {
+	if utils.Contains(rulesets, RULESET_EXPLOSIVE_WEAPONRY) {
 		ApplyToBothTeamMonsters(team1, team2, ApplyExplosiveWeaponRuleset)
 	}
-	if StrArrContains(rulesets, RULESET_FOG_OF_WAR) {
+	if utils.Contains(rulesets, RULESET_FOG_OF_WAR) {
 		ApplyToBothTeamMonsters(team1, team2, ApplyFogOfWarRuleset)
 	}
-	if StrArrContains(rulesets, RULESET_HEALED_OUT) {
+	if utils.Contains(rulesets, RULESET_HEALED_OUT) {
 		ApplyToBothTeamMonsters(team1, team2, ApplyHealedOutRuleset)
 	}
-	if StrArrContains(rulesets, RULESET_HEAVY_HITTERS) {
+	if utils.Contains(rulesets, RULESET_HEAVY_HITTERS) {
 		ApplyToBothTeamMonsters(team1, team2, ApplyHeavyHittersRuleset)
 	}
-	if StrArrContains(rulesets, RULESET_HOLY_PROTECTION) {
+	if utils.Contains(rulesets, RULESET_HOLY_PROTECTION) {
 		ApplyToBothTeamMonsters(team1, team2, ApplyHolyProtectionRuleset)
 	}
-	if StrArrContains(rulesets, RULESET_MELEE_MAYHEM) {
+	if utils.Contains(rulesets, RULESET_MELEE_MAYHEM) {
 		ApplyToBothTeamMonsters(team1, team2, ApplyMeleeMayhemRuleset)
 	}
-	if StrArrContains(rulesets, RULESET_NOXIOUS_FUMES) {
+	if utils.Contains(rulesets, RULESET_NOXIOUS_FUMES) {
 		ApplyToBothTeamMonsters(team1, team2, ApplyNoxiousFumesRuleset)
 	}
-	if StrArrContains(rulesets, RULESET_SILENCED_SUMMONERS) {
+	if utils.Contains(rulesets, RULESET_SILENCED_SUMMONERS) {
 		ApplySilencedSummonersRuleset(team1, team2)
 	}
-	if StrArrContains(rulesets, RULESET_SPREADING_FURY) {
+	if utils.Contains(rulesets, RULESET_SPREADING_FURY) {
 		ApplyToBothTeamMonsters(team1, team2, ApplySpreadingFuryRuleset)
 	}
-	if StrArrContains(rulesets, RULESET_SUPER_SNEAK) {
+	if utils.Contains(rulesets, RULESET_SUPER_SNEAK) {
 		ApplyToBothTeamMonsters(team1, team2, ApplySuperSneakRuleset)
 	}
-	if StrArrContains(rulesets, RULESET_WEAK_MAGIC) {
+	if utils.Contains(rulesets, RULESET_WEAK_MAGIC) {
 		ApplyToBothTeamMonsters(team1, team2, ApplyWeakMagicRuleset)
 	}
-	if StrArrContains(rulesets, RULESET_TARGET_PRACTICE) {
+	if utils.Contains(rulesets, RULESET_TARGET_PRACTICE) {
 		ApplyToBothTeamMonsters(team1, team2, ApplyTargetPracticeRuleset)
+	}
+}
+
+func DoRulesetPreGamePostBuff(rulesets []Ruleset, team1 GameTeam, team2 GameTeam) {
+	if utils.Contains(rulesets, RULESET_UNPROTECTED) {
+		ApplyToBothTeamMonsters(team1, team2, ApplyUnprotectedRuleset)
 	}
 }
 
@@ -75,22 +83,22 @@ func ApplyBackToBasicsRuleset(m MonsterCard) {
 
 /* All monsters have Close Range */
 func ApplyCloseRangeRuleset(m MonsterCard) {
-	m.AddAbility(ABILITY_CLOSE_RANGE)
+	m.AddAbilitiesWithArray([]Ability{ABILITY_CLOSE_RANGE})
 }
 
 /* All monsters have Opportunity */
 func ApplyEqualOpportunityRuleset(m MonsterCard) {
 	if !m.HasAbility(ABILITY_SNEAK) && !m.HasAbility(ABILITY_SNIPE) {
-		m.AddAbility(ABILITY_OPPORTUNITY)
+		m.AddAbilitiesWithArray([]Ability{ABILITY_OPPORTUNITY})
 	}
 }
 
-func ApplyEqualizer(team1 MonsterCard, team2 MonsterCard) {
+func ApplyEqualizer(team1 GameTeam, team2 GameTeam) {
 	allMonsters := make([]MonsterCard, 0)
-	allMonsters = append(allMonsters, team1.GetMonstersList(), team2.GetMonstersList())
+	allMonsters = append(team1.GetMonstersList(), team2.GetMonstersList()...)
 	highestHp := 0
 	for _, m := range allMonsters {
-		highestHp = GetBigger(m.Health, highestHp)
+		highestHp = utils.GetBigger(m.Health, highestHp)
 	}
 	for _, m := range allMonsters {
 		m.Health = highestHp
@@ -100,7 +108,7 @@ func ApplyEqualizer(team1 MonsterCard, team2 MonsterCard) {
 
 /* All monsters have blast */
 func ApplyExplosiveWeaponRuleset(m MonsterCard) {
-	m.AddAbility(ABILITY_BLAST)
+	m.AddAbilitiesWithArray([]Ability{ABILITY_BLAST})
 }
 
 /* No Sneak or Snipe */
@@ -118,12 +126,12 @@ func ApplyHealedOutRuleset(m MonsterCard) {
 
 /* All monsters have holy protection */
 func ApplyHolyProtectionRuleset(m MonsterCard) {
-	m.AddAbility(ABILITY_DIVINE_SHIELD)
+	m.AddAbilitiesWithArray([]Ability{ABILITY_DIVINE_SHIELD})
 }
 
 /* Monsters can attack from any position */
 func ApplyMeleeMayhemRuleset(m MonsterCard) {
-	m.AddAbility(ABILITY_MELEE_MAYHEM)
+	m.AddAbilitiesWithArray([]Ability{ABILITY_MELEE_MAYHEM})
 }
 
 /* All monsters poisoned */
@@ -132,7 +140,7 @@ func ApplyNoxiousFumesRuleset(m MonsterCard) {
 }
 
 /* Summoners don't do anything */
-func ApplySilencedSummonersRuleset(team1 MonsterCard, team2 MonsterCard) {
+func ApplySilencedSummonersRuleset(team1 GameTeam, team2 GameTeam) {
 	silenceSummoner(team1.GetSummoner())
 	silenceSummoner(team2.GetSummoner())
 }
@@ -149,25 +157,25 @@ func silenceSummoner(summoner SummonerCard) {
 
 /* All monsters has enrage */
 func ApplySpreadingFuryRuleset(m MonsterCard) {
-	m.AddAbility(ABILITY_ENRAGE)
+	m.AddAbilitiesWithArray([]Ability{ABILITY_ENRAGE})
 }
 
 /* All Melee monsters have sneak */
 func ApplySuperSneakRuleset(m MonsterCard) {
 	if m.Melee > 0 {
-		m.AddAbility(ABILITY_SNEAK)
+		m.AddAbilitiesWithArray([]Ability{ABILITY_SNEAK})
 	}
 }
 
 /* All monsters have void armor */
 func ApplyWeakMagicRuleset(m MonsterCard) {
-	m.AddAbility(ABILITY_VOID_ARMOR)
+	m.AddAbilitiesWithArray([]Ability{ABILITY_VOID_ARMOR})
 }
 
 /* All ranged and magic have snipe */
 func ApplyTargetPracticeRuleset(m MonsterCard) {
 	if m.Ranged > 0 || m.Magic > 0 {
-		m.AddAbility(ABILITY_SNIPE)
+		m.AddAbilitiesWithArray([]Ability{ABILITY_SNIPE})
 	}
 }
 
@@ -178,5 +186,14 @@ func ApplyUnprotectedRuleset(m MonsterCard) {
 }
 
 func ApplyHeavyHittersRuleset(m MonsterCard) {
-	m.AddAbility(ABILITY_KNOCK_OUT)
+	m.AddAbilitiesWithArray([]Ability{ABILITY_KNOCK_OUT})
+}
+
+func RulesetsContains(rulesets []Ruleset, ruleset Ruleset) bool {
+	for _, r := range rulesets {
+		if r == ruleset {
+			return true
+		}
+	}
+	return false
 }
