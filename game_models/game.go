@@ -2,6 +2,7 @@ package game_models
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"sort"
 
@@ -453,12 +454,13 @@ func (g *Game) DoSummonerPreRound(t GameTeam) {
 	}
 }
 
-// TODO Test
+// TODO Test  Get the next monster that should attack
 func (g *Game) GetNextMonsterTurn() *MonsterCard {
 	allUnmovedMonsters := append(g.team1.GetUnmovedMonsters(), g.team2.GetUnmovedMonsters()...)
 	if len(allUnmovedMonsters) == 0 {
 		return nil
 	}
+	fmt.Println("GetNextMonsterTurn - allUnmovedMonsters: ", allUnmovedMonsters)
 
 	// sort unmoved monsters
 	sort.SliceStable(allUnmovedMonsters, func(i, j int) bool {

@@ -341,6 +341,7 @@ func (c *MonsterCard) GetPostAbilityMagic() int {
 	postMagic := c.Magic
 	if c.HasDebuff(ABILITY_HALVING) {
 		postMagic = int(math.Floor((float64(postMagic) + 1) / 2))
+		postMagic = utils.GetBigger(postMagic, 1)
 	}
 	if c.GetIsLastStand() {
 		postMagic = int(math.Floor((float64(postMagic) * LAST_STAND_MULTIPLIER)))
@@ -368,6 +369,7 @@ func (c *MonsterCard) GetPostAbilityRange() int {
 	postRange := c.Ranged
 	if c.HasDebuff(ABILITY_HALVING) {
 		postRange = int(math.Floor((float64(postRange) + 1) / 2))
+		postRange = utils.GetBigger(postRange, 1)
 	}
 	if c.GetIsLastStand() {
 		postRange = int(math.Floor((float64(postRange) * LAST_STAND_MULTIPLIER)))
@@ -395,6 +397,7 @@ func (c *MonsterCard) GetPostAbilityMelee() int {
 	postMelee := c.Melee
 	if c.HasDebuff(ABILITY_HALVING) {
 		postMelee = int(math.Floor((float64(postMelee) + 1) / 2))
+		postMelee = utils.GetBigger(postMelee, 1)
 	}
 	if c.GetIsLastStand() {
 		postMelee = int(math.Floor((float64(postMelee) * LAST_STAND_MULTIPLIER)))
