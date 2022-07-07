@@ -39,7 +39,7 @@ func HitMonsterWithMagic(game Game, target *MonsterCard, magicDamage int) Battle
 	// hit void armor
 	if target.HasAbility(ABILITY_VOID_ARMOR) {
 		if target.Armor > 0 {
-			remainder := HitArmor(*target, magicDamage)
+			remainder := HitArmor(target, magicDamage)
 			return BattleDamage{
 				Attack:           1,
 				DamageDone:       0,
@@ -50,7 +50,7 @@ func HitMonsterWithMagic(game Game, target *MonsterCard, magicDamage int) Battle
 		}
 
 		// has void armor ability but no armor left
-		remainder := HitHealth(*target, magicDamage)
+		remainder := HitHealth(target, magicDamage)
 		return BattleDamage{
 			Attack:           magicDamage,
 			DamageDone:       magicDamage,
@@ -60,7 +60,7 @@ func HitMonsterWithMagic(game Game, target *MonsterCard, magicDamage int) Battle
 	}
 
 	// no void armor
-	remainder := HitHealth(*target, magicDamage)
+	remainder := HitHealth(target, magicDamage)
 	return BattleDamage{
 		Attack:           magicDamage,
 		DamageDone:       magicDamage,
@@ -73,7 +73,11 @@ func HitMonsterWithMagic(game Game, target *MonsterCard, magicDamage int) Battle
 Hits the monster with physical damage. Returns the remainder damage.
 This doesn't consider Piercing, so return remainder and call this one more time after hitting the armor
 */
-func HitMonsterWithPhysical(game *Game, target MonsterCard, damageAmount int) BattleDamage {
+func HitMonsterWithPhysical(game *Game, target *MonsterCard, damageAmount int) BattleDamage {
+	if target == nil {
+		return BattleDamage{}
+	}
+
 	// consider forcefield
 	if target.HasAbility(ABILITY_FORCEFIELD) && damageAmount >= FORCEFIELD_MIN_DAMAGE {
 		damageAmount = 1
@@ -82,7 +86,7 @@ func HitMonsterWithPhysical(game *Game, target MonsterCard, damageAmount int) Ba
 	// For things like thorns, this returns 1 to show a successful attack.
 	if target.HasAbility(ABILITY_DIVINE_SHIELD) {
 		target.RemoveDivineShield()
-		game.CreateAndAddBattleLog(BATTLE_ACTION_REMOVE_DIVINE_SHIELD, &target, nil, 0)
+		game.CreateAndAddBattleLog(BATTLE_ACTION_REMOVE_DIVINE_SHIELD, target, nil, 0)
 		return BattleDamage{Attack: 1}
 	}
 
@@ -119,7 +123,11 @@ func HitMonsterWithPhysical(game *Game, target MonsterCard, damageAmount int) Ba
 }
 
 /** Returns remainder damage after hitting armor. */
-func HitArmor(target MonsterCard, damageAmount int) int {
+func HitArmor(target *MonsterCard, damageAmount int) int {
+	if target == nil {
+		return 0
+	}
+
 	remainderArmor := target.Armor - damageAmount
 	if remainderArmor < 0 {
 		// damage was bigger than the armor
@@ -132,7 +140,11 @@ func HitArmor(target MonsterCard, damageAmount int) int {
 }
 
 /** Returns remainder damage after hitting health. */
-func HitHealth(target MonsterCard, damageAmount int) int {
+func HitHealth(target *MonsterCard, damageAmount int) int {
+	if target == nil {
+		return 0
+	}
+
 	preHitHealth := target.Health
 	target.AddHealth(-1 * damageAmount)
 	if target.Health < 0 {

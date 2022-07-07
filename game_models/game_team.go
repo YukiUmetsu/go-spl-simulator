@@ -33,7 +33,7 @@ func (t *GameTeam) SetTeamNumber(teamNumber TeamNumber) {
 }
 
 /** Position of the alive monsters */
-func (t *GameTeam) GetMonsterPosition(monster MonsterCard) int {
+func (t *GameTeam) GetMonsterPosition(monster *MonsterCard) int {
 	aliveMonsters := t.GetAliveMonsters()
 	for i, m := range aliveMonsters {
 		if m.cardDetail.ID == monster.cardDetail.ID {
@@ -56,11 +56,11 @@ func (t *GameTeam) GetFirstAliveMonster() *MonsterCard {
 	if len(aliveMonsters) == 0 {
 		return nil
 	}
-	return &aliveMonsters[0]
+	return aliveMonsters[0]
 }
 
-func (t *GameTeam) GetUnmovedMonsters() []MonsterCard {
-	unmovedMonsters := make([]MonsterCard, 0)
+func (t *GameTeam) GetUnmovedMonsters() []*MonsterCard {
+	unmovedMonsters := make([]*MonsterCard, 0)
 	for _, m := range t.GetAliveMonsters() {
 		if !m.GetHasTurnPassed() {
 			unmovedMonsters = append(unmovedMonsters, m)
@@ -69,11 +69,11 @@ func (t *GameTeam) GetUnmovedMonsters() []MonsterCard {
 	return unmovedMonsters
 }
 
-func (t *GameTeam) GetAliveMonsters() []MonsterCard {
-	aliveMonsters := make([]MonsterCard, 0)
+func (t *GameTeam) GetAliveMonsters() []*MonsterCard {
+	aliveMonsters := make([]*MonsterCard, 0)
 	for _, monster := range t.monsterList {
 		if monster.IsAlive() {
-			aliveMonsters = append(aliveMonsters, monster)
+			aliveMonsters = append(aliveMonsters, &monster)
 		}
 	}
 	return aliveMonsters
@@ -92,7 +92,7 @@ func (t *GameTeam) SetAllMonsterHealth() {
 	}
 }
 
-func (t *GameTeam) GetScattershotTarget() MonsterCard {
+func (t *GameTeam) GetScattershotTarget() *MonsterCard {
 	aliveMonsters := t.GetAliveMonsters()
 	rand.Seed(time.Now().Unix())
 	randomMonsterNum := rand.Intn(len(aliveMonsters))
@@ -109,7 +109,7 @@ func (t *GameTeam) GetSnipeTarget() *MonsterCard {
 	for _, m := range backlineAliveMonsters {
 		canBeSniped := !m.HasAbility(ABILITY_CAMOUFLAGE) && (!m.HasAttack() || m.Ranged > 0 || m.Magic > 0)
 		if canBeSniped {
-			return &m
+			return m
 		}
 	}
 
@@ -141,7 +141,7 @@ func (t *GameTeam) GetOpportunityTarget() *MonsterCard {
 			lowestHealth = m.Health
 		}
 	}
-	return &target
+	return target
 }
 
 func (t *GameTeam) GetSneakTarget() *MonsterCard {
@@ -159,11 +159,11 @@ func (t *GameTeam) GetSneakTarget() *MonsterCard {
 	for i := len(aliveMonsters) - 1; i > 0; i-- {
 		m := aliveMonsters[i]
 		if !m.HasAbility(ABILITY_CAMOUFLAGE) {
-			return &m
+			return m
 		}
 	}
 
-	return &aliveMonsters[0]
+	return aliveMonsters[0]
 }
 
 /** Which monster to repair, returns NULL if none. Repair target is the one that lost the most armor. */
@@ -175,7 +175,7 @@ func (t *GameTeam) GetRepairTarget() *MonsterCard {
 		armorDiff := m.GetPostAbilityMaxArmor() - m.Armor
 		if armorDiff > largestArmorDiff {
 			largestArmorDiff = armorDiff
-			monsterToRepair = &m
+			monsterToRepair = m
 		}
 	}
 
@@ -191,17 +191,17 @@ func (t *GameTeam) GetTriageHealTarget() *MonsterCard {
 		healthDiff := m.GetPostAbilityMaxHealth() - m.Health
 		if healthDiff > largestHealthDiff {
 			largestHealthDiff = healthDiff
-			monsterToTriage = &m
+			monsterToTriage = m
 		}
 	}
 
 	return monsterToTriage
 }
 
-func (t *GameTeam) GetBacklineAliveMonsters() []MonsterCard {
+func (t *GameTeam) GetBacklineAliveMonsters() []*MonsterCard {
 	aliveMonsters := t.GetAliveMonsters()
 	if len(aliveMonsters) <= 1 {
-		return []MonsterCard{}
+		return []*MonsterCard{}
 	}
 	return aliveMonsters[1:len(aliveMonsters)]
 }
@@ -210,7 +210,7 @@ func (t *GameTeam) GetTauntMonster() *MonsterCard {
 	aliveMonsters := t.GetAliveMonsters()
 	for _, monster := range aliveMonsters {
 		if monster.HasAbility(ABILITY_TAUNT) {
-			return &monster
+			return monster
 		}
 	}
 	return nil

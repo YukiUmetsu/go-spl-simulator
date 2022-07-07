@@ -83,7 +83,10 @@ func GetActionAbilities() []Ability {
 }
 
 /* Check if the monster has pre-game debuff abilities. If so, return those debuffs, otherwise empty array */
-func MonsterHasDebuffAbilities(m MonsterCard) []Ability {
+func MonsterHasDebuffAbilities(m *MonsterCard) []Ability {
+	if m == nil {
+		return []Ability{}
+	}
 	monsterDebuffs := []Ability{}
 	debuffs := GetMonsterPreGameDebuffAbilities()
 	for _, ability := range m.GameCard.Abilities {
@@ -94,8 +97,11 @@ func MonsterHasDebuffAbilities(m MonsterCard) []Ability {
 	return monsterDebuffs
 }
 
-func MonsterHasBuffsAbilities(m MonsterCard) []Ability {
+func MonsterHasBuffsAbilities(m *MonsterCard) []Ability {
 	monsterBuffs := []Ability{}
+	if m == nil {
+		return monsterBuffs
+	}
 	buffs := GetMonsterPreGameBuffAbilities()
 	for _, ability := range m.GameCard.Abilities {
 		if utils.Contains(buffs, ability) {
@@ -181,4 +187,16 @@ func ProtectMonster(m *MonsterCard) {
 
 func WeakenMonster(m *MonsterCard) {
 	m.Health = utils.GetBigger(m.Health-1, 1)
+}
+
+func SelfHealMonster(m *MonsterCard) int {
+	if m.HasDebuff(ABILITY_AFFLICTION) {
+		return 0
+	}
+
+	previousHealth := m.Health
+	maxHealth := float64(m.GetPostAbilityMaxHealth())
+	healAmount := utils.GetBigger(int(math.Floor(maxHealth/3)), MINIMUM_SELF_HEAL)
+	m.AddHealth(healAmount)
+	return m.Health - previousHealth
 }

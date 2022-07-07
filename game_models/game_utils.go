@@ -5,7 +5,7 @@ import (
 	"math/rand"
 )
 
-func GetDidDodge(rulesets []Ruleset, attacker MonsterCard, target MonsterCard, attackType CardAttackType) bool {
+func GetDidDodge(rulesets []Ruleset, attacker *MonsterCard, target *MonsterCard, attackType CardAttackType) bool {
 	// true strike
 	if attacker.HasAbility(ABILITY_TRUE_STRIKE) {
 		return false
@@ -54,7 +54,13 @@ func GetSuccessBelow(chance float64) bool {
 
 // Compare Attack Order
 // https://support.splinterlands.com/hc/en-us/articles/4414334269460-Attack-Order
-func NormalCompareAttackOrder(m1 MonsterCard, m2 MonsterCard) int {
+func NormalCompareAttackOrder(m1 *MonsterCard, m2 *MonsterCard) int {
+	if m1 == nil {
+		return -1
+	}
+	if m2 == nil {
+		return 1
+	}
 	speedDiff := m1.GetPostAbilitySpeed() - m2.GetPostAbilitySpeed()
 	if speedDiff != 0 {
 		return speedDiff
@@ -79,7 +85,10 @@ func NormalCompareAttackOrder(m1 MonsterCard, m2 MonsterCard) int {
 	return m1.GetLevel() - m2.GetLevel()
 }
 
-func ResolveFriendlyTies(m1 MonsterCard, m2 MonsterCard) int {
+func ResolveFriendlyTies(m1 *MonsterCard, m2 *MonsterCard) int {
+	if m1 == nil || m2 == nil {
+		return 0
+	}
 	m1Position := m1.GetCardPosition()
 	m2Position := m2.GetCardPosition()
 	if !m1.HasAttack() && !m2.HasAttack() {
@@ -99,8 +108,8 @@ func RandomTieBreaker() int {
 	return 1
 }
 
-func CardsArrIncludesMonster(cards []MonsterCard, m MonsterCard) bool {
-	if len(cards) == 0 {
+func CardsArrIncludesMonster(cards []MonsterCard, m *MonsterCard) bool {
+	if len(cards) == 0 || m == nil {
 		return false
 	}
 
@@ -114,7 +123,7 @@ func CardsArrIncludesMonster(cards []MonsterCard, m MonsterCard) bool {
 }
 
 // https://support.splinterlands.com/hc/en-us/articles/4414334269460-Attack-Order
-func MonsterTurnComparator(m1 MonsterCard, m2 MonsterCard) bool {
+func MonsterTurnComparator(m1 *MonsterCard, m2 *MonsterCard) bool {
 
 	normalCompareDiff := NormalCompareAttackOrder(m1, m2)
 
