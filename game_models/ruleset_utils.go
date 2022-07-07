@@ -197,3 +197,15 @@ func RulesetsContains(rulesets []Ruleset, ruleset Ruleset) bool {
 	}
 	return false
 }
+
+func ApplyEarthquake(g *Game, m *MonsterCard) BattleDamage {
+	if g == nil || m == nil {
+		return BattleDamage{}
+	}
+
+	if !m.HasAbility(ABILITY_FLYING) || m.HasDebuff(ABILITY_SNARE) {
+		return HitMonsterWithPhysical(g, m, EARTHQUAKE_DAMAGE)
+	}
+
+	return BattleDamage{}
+}

@@ -6,7 +6,7 @@ import (
 
 // TODO: Should this return the reduced damage or normal? Life steal against void?
 /** Hits the monster with magic damage. Returns the remainder damage. */
-func HitMonsterWithMagic(game Game, target *MonsterCard, magicDamage int) BattleDamage {
+func HitMonsterWithMagic(game *Game, target *MonsterCard, magicDamage int) BattleDamage {
 	// consider forcefield
 	if target.HasAbility(ABILITY_FORCEFIELD) && magicDamage > FORCEFIELD_MIN_DAMAGE {
 		magicDamage = 1

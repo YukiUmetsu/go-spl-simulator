@@ -200,3 +200,13 @@ func SelfHealMonster(m *MonsterCard) int {
 	m.AddHealth(healAmount)
 	return m.Health - previousHealth
 }
+
+func DispelBuffs(m *MonsterCard) {
+	buffMap := m.GetAllBuffs()
+	for buff, _ := range buffMap {
+		if buff == ABILITY_SCAVENGER || buff == ABILITY_LIFE_LEECH {
+			m.RemoveBuff(buff)
+		}
+		m.RemoveAllBuff(buff)
+	}
+}

@@ -529,7 +529,6 @@ func (g *Game) DoMonsterPreTurn(m *MonsterCard) {
 	}
 }
 
-// TODO
 func (g *Game) ResolveAttackForMonster(attacker *MonsterCard) {
 	if !attacker.HasAttack() {
 		return
@@ -557,7 +556,7 @@ func (g *Game) ResolveAttackForMonster(attacker *MonsterCard) {
 	if attacker.Melee > 0 {
 		target := g.GetTargetForAttackType(attacker, ATTACK_TYPE_MELEE)
 		if target != nil {
-			g.ResolveMeleeAttackForMonster(attacker, target, ATTACK_TYPE_MELEE)
+			g.ResolveMeleeAttackForMonster(attacker, target, ATTACK_TYPE_MELEE, false)
 		}
 	}
 
@@ -577,7 +576,7 @@ func (g *Game) ResolveAttackForMonster(attacker *MonsterCard) {
 	}
 }
 
-// TODO
+// Who this monster will target, if any. Null if none
 func (g *Game) GetTargetForAttackType(m *MonsterCard, attackType CardAttackType) *MonsterCard {
 	if !m.IsAlive() {
 		return nil
@@ -699,7 +698,6 @@ func (g *Game) GetTargetForMeleeAttack(m *MonsterCard) *MonsterCard {
 	return nil
 }
 
-// TODO
 func (g *Game) AttackMonsterPhase(attacker, target *MonsterCard, attackType CardAttackType) {
 	if attacker == nil || target == nil {
 		return
@@ -738,6 +736,58 @@ func (g *Game) AttackMonsterPhase(attacker, target *MonsterCard, attackType Card
 		g.HandleDivineShield(attacker, target, attackType, baseDamage, prevMonster, nextMonster, damageAmount)
 	}
 
+	battleDamage := g.ActuallyHitMonster(attacker, target, attackType)
+	g.CreateAndAddBattleLog(BATTLE_ACTION_ATTACK, attacker, target, battleDamage.DamageDone)
+
+	// Pierce
+	if attacker.HasAbility(ABILITY_PIERCING) && battleDamage.Remainder > 0 {
+		if attackType == ATTACK_TYPE_MAGIC {
+			HitMonsterWithMagic(g, target, battleDamage.Remainder)
+		} else {
+			HitMonsterWithPhysical(g, target, battleDamage.Remainder)
+		}
+	}
+
+	// TODO: this doesn't account for the pierce
+	g.MaybeApplyLifeLeech(attacker, battleDamage.ActualDamageDone)
+	g.MaybeApplyThorns(attacker, target, attackType)
+	g.MaybeApplyMagicReflect(attacker, target, attackType, attacker.GetPostAbilityAttackOfType(attackType))
+	g.MaybeApplyReturnFire(attacker, target, attackType, attacker.GetPostAbilityAttackOfType(attackType))
+	g.MaybeApplyRetaliate(attacker, target, attackType)
+	g.MaybeApplyHalving(attacker, target)
+
+	// check if dead
+	g.ProcessIfDead(attacker)
+	g.ProcessIfDead(target)
+
+	// check blast
+	g.MaybeApplyBlast(attacker, prevMonster, attackType, damageAmount)
+	g.MaybeApplyBlast(attacker, nextMonster, attackType, damageAmount)
+
+	// Shatter
+	if attacker.HasAbility(ABILITY_SHATTER) {
+		target.Armor = 0
+	}
+
+	// Stun
+	g.MaybeApplyStun(attacker, target)
+
+	// Poison
+	g.MaybeApplyPoison(attacker, target)
+
+	// Cripple
+	g.MaybeApplyCripple(attacker, target)
+
+	// Affliction
+	if attacker.HasAbility(ABILITY_AFFLICTION) && !target.HasDebuff(ABILITY_AFFLICTION) && GetSuccessBelow(AFFLICTION_CHANCE*100) {
+		g.CreateAndAddBattleLog(BATTLE_ACTION_AFFLICTION, attacker, target, battleDamage.DamageDone)
+		g.AddMonsterDebuffToAMonster(attacker, target, ABILITY_AFFLICTION, BATTLE_ACTION_AFFLICTION)
+	}
+
+	// Dispel
+	if attacker.HasAbility(ABILITY_DISPEL) {
+		DispelBuffs(target)
+	}
 }
 
 // Handle dodged log and backfire
@@ -790,15 +840,6 @@ func (g *Game) GetDamageMultiplier(attacker, target *MonsterCard) (int, []Abilit
 	return multiplier, appliedAbilities
 }
 
-// TODO: remove if not necessary: Calculate the damage that is used for calculating reflection damage
-func (g *Game) CalculateDamageForReflection(attacker, target *MonsterCard, totalDamage int, baseDamage int, multiplierAbilities []Ability) int {
-	if attacker == nil || target == nil || totalDamage == 0 || baseDamage == 0 {
-		return 0
-	}
-
-	return 0
-}
-
 func (g *Game) AddMonsterDebuffToAMonster(caster *MonsterCard, target *MonsterCard, debuff Ability, battleAction AdditionalBattleAction) {
 	target.AddDebuff(debuff)
 	g.CreateAndAddBattleLog(battleAction, caster, target, 0)
@@ -822,7 +863,7 @@ func (g *Game) HandleDivineShield(
 	} else if attackType == ATTACK_TYPE_RANGED {
 		g.MaybeApplyReturnFire(attacker, target, attackType, AttackDamageForReflections)
 	} else {
-		g.MaybeApplyThorns(attacker, target, attackType, AttackDamageForReflections)
+		g.MaybeApplyThorns(attacker, target, attackType)
 		g.MaybeApplyRetaliate(attacker, target, attackType)
 	}
 
@@ -839,9 +880,19 @@ func (g *Game) HandleDivineShield(
 	g.MaybeApplyBlast(attacker, nextMonster, attackType, damageAmount)
 }
 
-// TODO
-func (g *Game) ResolveMeleeAttackForMonster(attacker, target *MonsterCard, attackType CardAttackType) {
+// Resolve attack involves Trample
+func (g *Game) ResolveMeleeAttackForMonster(attacker, target *MonsterCard, attackType CardAttackType, hasTrampled bool) {
+	beforeAttackDeadMonsterCount := len(g.deadMonsters)
+	enemyTeam := g.GetTeamOfMonster(target)
+	mPosition := enemyTeam.GetMonsterPosition(target)
+	aliveEnemyMonsters := enemyTeam.GetAliveMonsters()
+	nextMonster := aliveEnemyMonsters[mPosition+1]
+	g.AttackMonsterPhase(attacker, target, ATTACK_TYPE_MELEE)
 
+	// Check Trample
+	if !hasTrampled && nextMonster != nil && attacker.HasAbility(ABILITY_TRAMPLE) && len(g.deadMonsters) > beforeAttackDeadMonsterCount {
+		g.ResolveMeleeAttackForMonster(attacker, nextMonster, attackType, utils.Contains(g.rulesets, RULESET_STAMPEDE))
+	}
 }
 
 func (g *Game) MaybeApplyBloodlust(attacker *MonsterCard, isReverseSpeed bool) {
@@ -895,7 +946,7 @@ func (g *Game) MaybeApplyMagicReflect(attacker *MonsterCard, target *MonsterCard
 		reflectDamage = 0
 	}
 
-	battleDamage := HitMonsterWithMagic(*g, attacker, reflectDamage)
+	battleDamage := HitMonsterWithMagic(g, attacker, reflectDamage)
 	g.CreateAndAddBattleLog(BATTLE_ACTION_MAGIC_REFLECT, attacker, target, battleDamage.DamageDone)
 }
 
@@ -926,18 +977,13 @@ func (g *Game) MaybeApplyReturnFire(attacker *MonsterCard, target *MonsterCard, 
 	g.CreateAndAddBattleLog(BATTLE_ACTION_RETURN_FIRE, attacker, target, battleDamage.DamageDone)
 }
 
-func (g *Game) MaybeApplyThorns(attacker *MonsterCard, target *MonsterCard, attackType CardAttackType, attackDamageForReflections int) {
+func (g *Game) MaybeApplyThorns(attacker *MonsterCard, target *MonsterCard, attackType CardAttackType) {
 	if !target.HasAbility(ABILITY_THORNS) || attackType != ATTACK_TYPE_MELEE {
 		return
 	}
 
-	attackDamage := 0
-	if attackDamageForReflections != 0 {
-		attackDamage = attackDamageForReflections
-	}
-
-	// half of the melee attack damage (round up)
-	reflectDamage := int(math.Ceil(float64(attackDamage) / 2))
+	// Thorns always do the same damage amount
+	reflectDamage := THORNS_DAMAGE
 
 	// Amplify
 	if attacker.HasDebuff(ABILITY_AMPLIFY) {
@@ -994,15 +1040,127 @@ func (g *Game) MaybeApplyHalving(attacker, target *MonsterCard) {
 	}
 }
 
-// TODO
-// Blast has a ton of edge cases... https://support.splinterlands.com/hc/en-us/articles/4414966685332-Abilities-Status-Effects
-func (g *Game) MaybeApplyBlast(attacker, target *MonsterCard, attackType CardAttackType, damageAmount int) {
+func (g *Game) MaybeApplyLifeLeech(attacker *MonsterCard, damage int) {
+	if !attacker.IsAlive() || !attacker.HasAbility(ABILITY_LIFE_LEECH) {
+		return
+	}
 
+	lifeLeechAmount := int(math.Ceil(float64(damage) / 2))
+	for i := 0; i < lifeLeechAmount; i++ {
+		attacker.AddBuff(ABILITY_LIFE_LEECH)
+	}
+	g.CreateAndAddBattleLog(BATTLE_ACTION_LIFE_LEECH, attacker, nil, lifeLeechAmount)
 }
 
-// TODO
-func (g *Game) DoPostRound() {
+// Blast has a ton of edge cases... https://support.splinterlands.com/hc/en-us/articles/4414966685332-Abilities-Status-Effects
+func (g *Game) MaybeApplyBlast(attacker, blastTarget *MonsterCard, attackType CardAttackType, damageAmount int) {
+	if !attacker.HasAbility(ABILITY_BLAST) || blastTarget == nil {
+		return
+	}
 
+	baseBlastDamage := int(math.Ceil(float64(damageAmount) / 2))
+	damageMultiplier := g.GetPostBlastDamageMultiplier(attacker, blastTarget)
+	blastDamage := baseBlastDamage * damageMultiplier
+
+	// Forcefield
+	if blastTarget.HasAbility(ABILITY_FORCEFIELD) && blastDamage >= FORCEFIELD_MIN_DAMAGE {
+		blastDamage = 1
+	}
+
+	// Snare
+	if blastTarget.HasAbility(ABILITY_FLYING) && attacker.HasAbility(ABILITY_SNARE) && !blastTarget.HasDebuff(ABILITY_SNARE) {
+		g.AddMonsterDebuffToAMonster(attacker, blastTarget, ABILITY_SNARE, BATTLE_ACTION_SNARE)
+	}
+
+	// Reflection shield
+	if blastTarget.HasAbility(ABILITY_REFLECTION_SHIELD) {
+		blastDamage = 0
+	}
+
+	// Magic blast damage
+	if attackType == ATTACK_TYPE_MAGIC {
+		battleDamage := HitMonsterWithMagic(g, blastTarget, blastDamage)
+		g.CreateAndAddBattleLog(BATTLE_ACTION_BLAST, attacker, blastTarget, battleDamage.DamageDone)
+		g.MaybeApplyMagicReflect(attacker, blastTarget, attackType, battleDamage.Attack)
+		g.MaybeApplyLifeLeech(attacker, (blastDamage - battleDamage.Remainder))
+	} else {
+		// melee or range attack
+		battleDamage := HitMonsterWithPhysical(g, blastTarget, blastDamage)
+		g.CreateAndAddBattleLog(BATTLE_ACTION_BLAST, attacker, blastTarget, battleDamage.DamageDone)
+		g.MaybeApplyReturnFire(attacker, blastTarget, attackType, battleDamage.Attack)
+	}
+
+	// check dead monster
+	g.ProcessIfDead(blastTarget)
+	g.ProcessIfDead(attacker)
+}
+
+func (g *Game) GetPostBlastDamageMultiplier(attacker, blastTarget *MonsterCard) int {
+	multiplier := 1
+
+	// Recharge
+	if attacker.HasAbility(ABILITY_RECHARGE) {
+		multiplier *= 3
+	}
+
+	// Giant killer
+	if attacker.HasAbility(ABILITY_GIANT_KILLER) && blastTarget.Mana >= 10 {
+		multiplier *= 2
+	}
+
+	// Knock out
+	if blastTarget.HasDebuff(ABILITY_STUN) && attacker.HasAbility(ABILITY_KNOCK_OUT) {
+		multiplier *= 2
+	}
+
+	// Oppress
+	if !blastTarget.HasAttack() && attacker.HasAbility(ABILITY_OPPRESS) {
+		multiplier *= 2
+	}
+
+	return multiplier
+}
+
+func (g *Game) DoPostRound() {
+	aliveTeam1 := g.team1.GetAliveMonsters()
+	aliveTeam2 := g.team2.GetAliveMonsters()
+
+	// Earthquake
+	if utils.Contains(g.rulesets, RULESET_EARTHQUAKE) {
+		g.DoPostRoundEarthquake(aliveTeam1)
+		g.DoPostRoundEarthquake(aliveTeam2)
+		aliveTeam1 = g.team1.GetAliveMonsters()
+		aliveTeam2 = g.team2.GetAliveMonsters()
+	}
+
+	// Poison
+	g.DoPostRoundPoison(aliveTeam1)
+	g.DoPostRoundPoison(aliveTeam2)
+}
+
+// handle earthquake
+func (g *Game) DoPostRoundEarthquake(monsters []*MonsterCard) {
+	for _, m := range monsters {
+		battleDamage := ApplyEarthquake(g, m)
+		g.CreateAndAddBattleLog(BATTLE_ACTION_EARTHQUAKE, m, nil, battleDamage.DamageDone)
+		g.ProcessIfDead(m)
+		g.CheckAndSetGameWinner()
+		if g.winner != nil {
+			return
+		}
+	}
+}
+
+// Handle poison (another name monstersOnPostRound)
+func (g *Game) DoPostRoundPoison(monsters []*MonsterCard) {
+	for _, m := range monsters {
+		if m.HasDebuff(ABILITY_POISON) {
+			m.Health -= POISON_DAMAGE
+			g.ProcessIfDead(m)
+			g.CreateAndAddBattleLog(BATTLE_ACTION_POISON, m, nil, POISON_DAMAGE)
+		}
+		m.SetHasTurnPassed(false)
+	}
 }
 
 func (g *Game) GetTeamOfMonster(m *MonsterCard) GameTeam {
@@ -1019,8 +1177,26 @@ func (g *Game) GetEnemyTeamOfMonster(m *MonsterCard) GameTeam {
 	return g.team1
 }
 
-// TODO Returns true if resurrected, false otherwise
+// Returns true if resurrected, false otherwise
 func (g *Game) ProcessIfResurrect(caster GameCardInterface, deadMonster *MonsterCard) bool {
+	if deadMonster.HasAbility(ABILITY_RESURRECT) && !deadMonster.IsAlive() {
+		deadMonster.RemoveAbility(ABILITY_RESURRECT)
+		deadMonster.Resurrect()
+
+		// remove it from the dead monsters list
+		deadMonsterList := make([]MonsterCard, 0)
+		for _, m := range g.deadMonsters {
+			if m.cardDetail.Name == deadMonster.cardDetail.Name {
+				continue
+			}
+			deadMonsterList = append(deadMonsterList, m)
+		}
+		g.deadMonsters = deadMonsterList
+
+		g.CreateAndAddBattleLog(BATTLE_ACTION_RESURRECT, caster, deadMonster, 0)
+		return true
+	}
+
 	return false
 }
 
@@ -1055,4 +1231,20 @@ func (g *Game) OnMonsterDeath(m *MonsterCard, deadMonster *MonsterCard) {
 		m.AddBuff(ABILITY_SCAVENGER)
 		g.CreateAndAddBattleLog(BATTLE_ACTION_SCAVENGER, m, deadMonster, 1)
 	}
+}
+
+func (g *Game) ActuallyHitMonster(attacker, target *MonsterCard, attackType CardAttackType) BattleDamage {
+	damageMultiplier, _ := g.GetDamageMultiplier(attacker, target)
+	damageAmount := attacker.GetPostAbilityAttackOfType(attackType) * damageMultiplier
+	battleDamage := BattleDamage{Attack: 0, DamageDone: 0, Remainder: 0, ActualDamageDone: 0}
+
+	if attackType == ATTACK_TYPE_MAGIC {
+		battleDamage = HitMonsterWithMagic(g, target, damageAmount)
+	} else if attackType == ATTACK_TYPE_RANGED {
+		battleDamage = HitMonsterWithPhysical(g, target, damageAmount)
+	} else if attackType == ATTACK_TYPE_MELEE {
+		battleDamage = HitMonsterWithPhysical(g, target, damageAmount)
+	}
+
+	return battleDamage
 }

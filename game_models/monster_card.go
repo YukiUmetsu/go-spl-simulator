@@ -600,3 +600,21 @@ func (c *MonsterCard) RemoveDivineShield() {
 func (c *MonsterCard) SetHasTurnPasses(hasPassed bool) {
 	c.hasTurnPassed = hasPassed
 }
+
+func (c *MonsterCard) GetAllBuffs() map[Ability]int {
+	return c.BuffMap
+}
+
+func (c *MonsterCard) GetBuffAmount(buff Ability) int {
+	if val, ok := c.BuffMap[buff]; ok {
+		return val
+	}
+	return 0
+}
+
+func (c *MonsterCard) RemoveAllBuff(buff Ability) {
+	buffAmount := c.GetBuffAmount(buff)
+	for i := 0; i < buffAmount; i++ {
+		c.RemoveBuff(buff)
+	}
+}
