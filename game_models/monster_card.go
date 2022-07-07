@@ -417,7 +417,12 @@ func (c *MonsterCard) GetPostAbilityMelee() int {
 		meleeModifier = meleeModifier + c.summonerMelee
 	}
 
-	return utils.GetBigger(postMelee+meleeModifier, 1)
+	currentMelee := utils.GetBigger(postMelee+meleeModifier, 1)
+	if c.IsEnraged() {
+		return int(math.Ceil(float64(currentMelee) * ENRAGE_MULTIPLIER))
+	}
+
+	return currentMelee
 }
 
 func (c *MonsterCard) GetPostAbilitySpeed() int {
