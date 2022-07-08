@@ -2,7 +2,6 @@ package game_models
 
 import (
 	"errors"
-	"fmt"
 	"math"
 	"sort"
 
@@ -239,12 +238,14 @@ func (g *Game) GetAllAliveMonsters() []*MonsterCard {
 func (g *Game) PlayRoundsUntilGameEnd(roundNumber int) {
 	g.roundNumber = roundNumber
 	if g.winner != TEAM_NUM_UNKNOWN {
+		g.LogGameOver()
 		return
 	}
 
 	// if round >= 50, game is tie
 	if roundNumber > 50 {
 		g.winner = TEAM_NUM_TIE
+		g.LogGameOver()
 	}
 
 	// Fatigue
@@ -252,6 +253,7 @@ func (g *Game) PlayRoundsUntilGameEnd(roundNumber int) {
 		g.FatigueMonsters(roundNumber)
 		g.CheckAndSetGameWinner()
 		if g.winner != TEAM_NUM_UNKNOWN {
+			g.LogGameOver()
 			return
 		}
 	}
@@ -260,6 +262,7 @@ func (g *Game) PlayRoundsUntilGameEnd(roundNumber int) {
 	g.PlaySingleRound()
 	g.CheckAndSetGameWinner()
 	if g.winner != TEAM_NUM_UNKNOWN {
+		g.LogGameOver()
 		return
 	}
 
@@ -268,6 +271,22 @@ func (g *Game) PlayRoundsUntilGameEnd(roundNumber int) {
 	g.CheckAndSetGameWinner()
 
 	g.PlayRoundsUntilGameEnd(roundNumber + 1)
+}
+
+func (g *Game) LogGameOver() {
+	if g.winner == TEAM_NUM_UNKNOWN {
+		return
+	}
+
+	winnerTeamLabel := ""
+	if g.winner == TEAM_NUM_ONE {
+		winnerTeamLabel = "1 - " + g.team1.GetPlayerName()
+	} else if g.winner == TEAM_NUM_TWO {
+		winnerTeamLabel = "2 - " + g.team2.GetPlayerName()
+	} else {
+		winnerTeamLabel = "TIE"
+	}
+	g.CreateAndAddBattleLog(AdditionalBattleAction(string(BATTLE_ACTION_GAME_OVER)+" Winner: "+winnerTeamLabel), nil, nil, int(g.winner))
 }
 
 func (g *Game) FatigueMonsters(roundNumber int) {
@@ -282,6 +301,7 @@ func (g *Game) FatigueMonsters(roundNumber int) {
 
 	g.CheckAndSetGameWinner()
 	if g.winner != TEAM_NUM_UNKNOWN {
+		g.LogGameOver()
 		return
 	}
 }
@@ -854,7 +874,6 @@ func (g *Game) GetDamageMultiplier(attacker, target *MonsterCard) (int, []Abilit
 
 	// Deathblow x2
 	if attacker.HasAbility(ABILITY_DEATHBLOW) && target.IsLastMonster() {
-		fmt.Println("GetDamageMultiplier ", ABILITY_DEATHBLOW, ": ", attacker.GetName(), " -> ", target.GetName(), " isOnlyMonster:", target.isOnlyMonster)
 		multiplier *= 2
 		appliedAbilities = append(appliedAbilities, ABILITY_DEATHBLOW)
 	}
@@ -1182,6 +1201,7 @@ func (g *Game) DoPostRoundEarthquake(monsters []*MonsterCard) {
 		g.ProcessIfDead(m)
 		g.CheckAndSetGameWinner()
 		if g.winner != TEAM_NUM_UNKNOWN {
+			g.LogGameOver()
 			return
 		}
 	}

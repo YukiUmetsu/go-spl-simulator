@@ -8,15 +8,21 @@ import (
 type GameTeam struct {
 	summoner    *SummonerCard
 	monsterList []*MonsterCard
+	playerName  string
 }
 
-func (t *GameTeam) Create(summoner *SummonerCard, monsterList []*MonsterCard) {
+func (t *GameTeam) Create(summoner *SummonerCard, monsterList []*MonsterCard, playerName string) {
 	t.summoner = summoner
 	t.monsterList = monsterList
+	t.playerName = playerName
 	if len(t.monsterList) == 1 {
 		t.monsterList[0].SetIsOnlyMonster()
 	}
 	t.SetMonsterPositions()
+}
+
+func (t *GameTeam) GetPlayerName() string {
+	return t.playerName
 }
 
 func (t *GameTeam) SetMonsterPositions() {

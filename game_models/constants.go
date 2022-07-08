@@ -141,6 +141,7 @@ const (
 	BATTLE_ACTION_ROUND_START   AdditionalBattleAction = "Round start"
 	BATTLE_ACTION_ATTACK        AdditionalBattleAction = "Attack"
 	BATTLE_ACTION_ATTACK_DODGED AdditionalBattleAction = "Dodged"
+	BATTLE_ACTION_GAME_OVER     AdditionalBattleAction = "Game Over"
 
 	// abilities
 	BATTLE_ACTION_AFFLICTION           AdditionalBattleAction = "Affliction"

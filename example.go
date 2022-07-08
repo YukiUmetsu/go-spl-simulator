@@ -84,7 +84,7 @@ func CreateGameTeam(cardDetailMap CardDetailMap, battleTeam BattleTeam) *GameTea
 		monsterList = append(monsterList, &monster)
 	}
 	var team GameTeam
-	team.Create(&summoner, monsterList)
+	team.Create(&summoner, monsterList, battleTeam.Player)
 	return &team
 }
 
