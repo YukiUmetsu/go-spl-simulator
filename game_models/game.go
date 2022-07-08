@@ -2,7 +2,6 @@ package game_models
 
 import (
 	"errors"
-	"fmt"
 	"math"
 	"sort"
 
@@ -15,8 +14,8 @@ type Game struct {
 	rulesets   []Ruleset
 	battleLogs []BattleLog
 	shouldLog  bool
-	/* 1: team1, 2: team2, 3: Tie */
-	winner       *TeamNumber
+	/* 0: unknown, 1: team1, 2: team2, 3: Tie */
+	winner       TeamNumber
 	deadMonsters []MonsterCard
 	roundNumber  int
 }
@@ -30,7 +29,7 @@ func (g *Game) Create(team1 GameTeam, team2 GameTeam, rulesets []Ruleset, should
 	g.team2.SetTeamNumber(TEAM_NUM_TWO)
 }
 
-func (g *Game) GetWinner() *TeamNumber {
+func (g *Game) GetWinner() TeamNumber {
 	return g.winner
 }
 
@@ -74,7 +73,7 @@ func (g *Game) PlayGame() {
 	g.PlayRoundsUntilGameEnd(0)
 }
 
-func (g *Game) DoSummonerPreGameBuff(summoner SummonerCard, friendlyMonsters []MonsterCard) {
+func (g *Game) DoSummonerPreGameBuff(summoner *SummonerCard, friendlyMonsters []*MonsterCard) {
 	// add summoner abilities that increase stats (aka, strengthen)
 	for _, ability := range GetSummonerPreGameBuffAbilities() {
 		if summoner.HasAbility(ability) {
@@ -113,7 +112,7 @@ func (g *Game) DoSummonerPreGameBuff(summoner SummonerCard, friendlyMonsters []M
 }
 
 // Add all summoner abilities to all enemy monsters which are in SUMMONER_DEBUFF_ABILITIES
-func (g *Game) DoSummonerPreGameDebuff(summoner SummonerCard, targetMonsters []MonsterCard) {
+func (g *Game) DoSummonerPreGameDebuff(summoner *SummonerCard, targetMonsters []*MonsterCard) {
 	// add summoner debuffs (aka, affliciton, blind)
 	for _, ability := range GetSummonerPreGameDebuffAbilities() {
 		if summoner.HasAbility(ability) {
@@ -152,7 +151,7 @@ func (g *Game) DoSummonerPreGameDebuff(summoner SummonerCard, targetMonsters []M
 }
 
 // Add all monster abilities to all friendly monsters which are in MONSTER_BUFF_ABILITIES
-func (g *Game) DoMonsterPreGameBuff(friendlyMonsters []MonsterCard) {
+func (g *Game) DoMonsterPreGameBuff(friendlyMonsters []*MonsterCard) {
 	for _, m := range friendlyMonsters {
 		for _, buff := range GetMonsterPreGameBuffAbilities() {
 			if !m.HasAbility(buff) {
@@ -164,7 +163,7 @@ func (g *Game) DoMonsterPreGameBuff(friendlyMonsters []MonsterCard) {
 	}
 }
 
-func (g *Game) DoMonsterPreGameDebuff(team1Monsters []MonsterCard, team2Monsters []MonsterCard) {
+func (g *Game) DoMonsterPreGameDebuff(team1Monsters []*MonsterCard, team2Monsters []*MonsterCard) {
 	for _, debuff := range GetMonsterPreGameDebuffAbilities() {
 		// team1 debuff team2
 		for _, m := range team1Monsters {
@@ -184,20 +183,20 @@ func (g *Game) DoMonsterPreGameDebuff(team1Monsters []MonsterCard, team2Monsters
 	}
 }
 
-func (g *Game) ApplyBuffToMonsters(monsters []MonsterCard, buff Ability) {
+func (g *Game) ApplyBuffToMonsters(monsters []*MonsterCard, buff Ability) {
 	// add stats buff
 	for _, m := range monsters {
 		m.AddBuff(buff)
 	}
 }
 
-func (g *Game) ApplyAbilityToMonsters(monsters []MonsterCard, ability Ability) {
+func (g *Game) ApplyAbilityToMonsters(monsters []*MonsterCard, ability Ability) {
 	for _, m := range monsters {
 		m.AddAbilitiesWithArray([]Ability{ability})
 	}
 }
 
-func (g *Game) ApplyDebuffToMonsters(monsters []MonsterCard, debuff Ability) {
+func (g *Game) ApplyDebuffToMonsters(monsters []*MonsterCard, debuff Ability) {
 	for _, m := range monsters {
 		m.AddDebuff(debuff)
 	}
@@ -214,20 +213,20 @@ func (g *Game) GetAllAliveMonsters() []*MonsterCard {
 // Plays the game rounds until the game is over
 func (g *Game) PlayRoundsUntilGameEnd(roundNumber int) {
 	g.roundNumber = roundNumber
-	if g.winner != nil {
+	if g.winner != TEAM_NUM_UNKNOWN {
 		return
 	}
 
 	// if round >= 50, game is tie
 	if roundNumber > 50 {
-		*g.winner = TEAM_NUM_UNKNOWN
+		g.winner = TEAM_NUM_TIE
 	}
 
 	// Fatigue
 	if roundNumber >= FATIGUE_ROUND_NUMBER {
 		g.FatigueMonsters(roundNumber)
 		g.CheckAndSetGameWinner()
-		if g.winner != nil {
+		if g.winner != TEAM_NUM_UNKNOWN {
 			return
 		}
 	}
@@ -235,7 +234,7 @@ func (g *Game) PlayRoundsUntilGameEnd(roundNumber int) {
 	// Play one round
 	g.PlaySingleRound()
 	g.CheckAndSetGameWinner()
-	if g.winner != nil {
+	if g.winner != TEAM_NUM_UNKNOWN {
 		return
 	}
 
@@ -257,7 +256,7 @@ func (g *Game) FatigueMonsters(roundNumber int) {
 	}
 
 	g.CheckAndSetGameWinner()
-	if g.winner != nil {
+	if g.winner != TEAM_NUM_UNKNOWN {
 		return
 	}
 }
@@ -290,11 +289,11 @@ func (g *Game) CheckAndSetGameWinner() {
 	team2AliveMonstersCount := len(g.team2.GetAliveMonsters())
 
 	if team1AliveMonstersCount == 1 && team2AliveMonstersCount == 1 {
-		*g.winner = TEAM_NUM_UNKNOWN
+		g.winner = TEAM_NUM_UNKNOWN
 	} else if team2AliveMonstersCount == 0 {
-		*g.winner = TEAM_NUM_ONE
+		g.winner = TEAM_NUM_ONE
 	} else if team1AliveMonstersCount == 0 {
-		*g.winner = TEAM_NUM_TWO
+		g.winner = TEAM_NUM_TWO
 	}
 }
 
@@ -329,7 +328,7 @@ func (g *Game) ProcessIfDead(m *MonsterCard) {
 	// Ressurect
 	friendlySummoner := friendlyTeam.GetSummoner()
 	// summoner resurrect
-	wasResurrected := g.ProcessIfResurrect(&friendlySummoner, m)
+	wasResurrected := g.ProcessIfResurrect(friendlySummoner, m)
 	// friendly monster resurrect
 	for _, friendlyMonster := range aliveFriendlyMonsters {
 		if wasResurrected {
@@ -425,7 +424,7 @@ func (g *Game) DoSummonerPreRound(t GameTeam) {
 	if summoner.HasAbility(ABILITY_CLEANSE) {
 		firstMonster := t.GetFirstAliveMonster()
 		firstMonster.CleanseDebuffs()
-		g.CreateAndAddBattleLog(BATTLE_ACTION_CLEANSE, &summoner, firstMonster, 0)
+		g.CreateAndAddBattleLog(BATTLE_ACTION_CLEANSE, summoner, firstMonster, 0)
 	}
 
 	// Repair
@@ -433,7 +432,7 @@ func (g *Game) DoSummonerPreRound(t GameTeam) {
 		repairTarget := t.GetRepairTarget()
 		if repairTarget != nil {
 			RepairMonsterArmor(repairTarget)
-			g.CreateAndAddBattleLog(BATTLE_ACTION_REPAIR, &summoner, repairTarget, 0)
+			g.CreateAndAddBattleLog(BATTLE_ACTION_REPAIR, summoner, repairTarget, 0)
 		}
 	}
 
@@ -441,7 +440,7 @@ func (g *Game) DoSummonerPreRound(t GameTeam) {
 	if summoner.HasAbility(ABILITY_TANK_HEAL) {
 		firstMonster := t.GetFirstAliveMonster()
 		TankHealMonster(firstMonster)
-		g.CreateAndAddBattleLog(BATTLE_ACTION_TANK_HEAL, &summoner, firstMonster, 0)
+		g.CreateAndAddBattleLog(BATTLE_ACTION_TANK_HEAL, summoner, firstMonster, 0)
 	}
 
 	// Triage
@@ -449,7 +448,7 @@ func (g *Game) DoSummonerPreRound(t GameTeam) {
 		healTarget := t.GetTriageHealTarget()
 		if healTarget != nil {
 			healAmount := TriageHealMonster(healTarget)
-			g.CreateAndAddBattleLog(BATTLE_ACTION_TANK_HEAL, &summoner, healTarget, healAmount)
+			g.CreateAndAddBattleLog(BATTLE_ACTION_TANK_HEAL, summoner, healTarget, healAmount)
 		}
 	}
 }
@@ -460,7 +459,9 @@ func (g *Game) GetNextMonsterTurn() *MonsterCard {
 	if len(allUnmovedMonsters) == 0 {
 		return nil
 	}
-	fmt.Println("GetNextMonsterTurn - allUnmovedMonsters: ", allUnmovedMonsters)
+	// PrintMonsterList("g.team1.GetUnmovedMonsters: ", g.team1.GetUnmovedMonsters())
+	// PrintMonsterList("g.team2.GetUnmovedMonsters: ", g.team2.GetUnmovedMonsters())
+	// PrintMonsterList("GetNextMonsterTurn - allUnmovedMonsters: ", allUnmovedMonsters)
 
 	// sort unmoved monsters
 	sort.SliceStable(allUnmovedMonsters, func(i, j int) bool {
@@ -470,7 +471,7 @@ func (g *Game) GetNextMonsterTurn() *MonsterCard {
 
 		// Descending order
 		if normalCompareDiff != 0 {
-			return normalCompareDiff > 0
+			return normalCompareDiff < 0
 		}
 
 		// resolve tie by order if the same team, else random
@@ -725,8 +726,15 @@ func (g *Game) AttackMonsterPhase(attacker, target *MonsterCard, attackType Card
 	attackedTeam := g.GetTeamOfMonster(target)
 	attackedPosition := attackedTeam.GetMonsterPosition(target)
 	attackedTeamAliveMonsters := attackedTeam.GetAliveMonsters()
-	prevMonster := attackedTeamAliveMonsters[attackedPosition-1]
-	nextMonster := attackedTeamAliveMonsters[attackedPosition+1]
+
+	var prevMonster *MonsterCard
+	if attackedPosition-1 >= 0 {
+		prevMonster = attackedTeamAliveMonsters[attackedPosition-1]
+	}
+	var nextMonster *MonsterCard
+	if attackedPosition+1 < len(attackedTeamAliveMonsters) {
+		nextMonster = attackedTeamAliveMonsters[attackedPosition+1]
+	}
 
 	// Snare the target monster
 	if target.HasAbility(ABILITY_FLYING) && attacker.HasAbility(ABILITY_SNARE) && !target.HasDebuff(ABILITY_SNARE) {
@@ -888,7 +896,10 @@ func (g *Game) ResolveMeleeAttackForMonster(attacker, target *MonsterCard, attac
 	enemyTeam := g.GetTeamOfMonster(target)
 	mPosition := enemyTeam.GetMonsterPosition(target)
 	aliveEnemyMonsters := enemyTeam.GetAliveMonsters()
-	nextMonster := aliveEnemyMonsters[mPosition+1]
+	var nextMonster *MonsterCard
+	if mPosition+1 < len(aliveEnemyMonsters) {
+		nextMonster = aliveEnemyMonsters[mPosition+1]
+	}
 	g.AttackMonsterPhase(attacker, target, ATTACK_TYPE_MELEE)
 
 	// Check Trample
@@ -1147,7 +1158,7 @@ func (g *Game) DoPostRoundEarthquake(monsters []*MonsterCard) {
 		g.CreateAndAddBattleLog(BATTLE_ACTION_EARTHQUAKE, m, nil, battleDamage.DamageDone)
 		g.ProcessIfDead(m)
 		g.CheckAndSetGameWinner()
-		if g.winner != nil {
+		if g.winner != TEAM_NUM_UNKNOWN {
 			return
 		}
 	}

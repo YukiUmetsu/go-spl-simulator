@@ -1,22 +1,22 @@
 package game_models
 
-type CardType int
+type CardType string
 
 const (
-	SUMMONER CardType = iota
-	MONSTER
+	SUMMONER CardType = "Monster"
+	MONSTER           = "Summoner"
 )
 
-type CardColor int
+type CardColor string
 
 const (
-	COLOR_BLACK CardColor = iota
-	COLOR_BLUE
-	COLOR_GOLD
-	COLOR_GRAY
-	COLOR_GREEN
-	COLOR_RED
-	COLOR_WHITE
+	COLOR_BLACK CardColor = "Black"
+	COLOR_BLUE            = "Blue"
+	COLOR_GOLD            = "Gold"
+	COLOR_GRAY            = "Gray"
+	COLOR_GREEN           = "Green"
+	COLOR_RED             = "Red"
+	COLOR_WHITE           = "White"
 )
 
 type Ability string
@@ -129,81 +129,81 @@ const (
 	TEAM_NUM_TIE
 )
 
-type AdditionalBattleAction int
+type AdditionalBattleAction string
 
 const (
-	BATTLE_ACTION_DEATH AdditionalBattleAction = iota
-	BATTLE_ACTION_EARTHQUAKE
-	BATTLE_ACTION_FATIGUE
-	BATTLE_ACTION_MELEE
-	BATTLE_ACTION_RANGED
-	BATTLE_ACTION_MAGIC
-	BATTLE_ACTION_ROUND_START
-	BATTLE_ACTION_ATTACK
-	BATTLE_ACTION_ATTACK_DODGED
+	BATTLE_ACTION_DEATH         AdditionalBattleAction = "Death"
+	BATTLE_ACTION_EARTHQUAKE                           = "Earthquake"
+	BATTLE_ACTION_FATIGUE                              = "Fatigue"
+	BATTLE_ACTION_MELEE                                = "Melee attack"
+	BATTLE_ACTION_RANGED                               = "Ranged attack"
+	BATTLE_ACTION_MAGIC                                = "Magic attack"
+	BATTLE_ACTION_ROUND_START                          = "Round start"
+	BATTLE_ACTION_ATTACK                               = "Attack"
+	BATTLE_ACTION_ATTACK_DODGED                        = "Dodged"
 
 	// abilities
-	BATTLE_ACTION_AFFLICTION
-	BATTLE_ACTION_BACKFIRE
-	BATTLE_ACTION_BLAST
-	BATTLE_ACTION_BLOODLUST
-	BATTLE_ACTION_CLEANSE
-	BATTLE_ACTION_CRIPPLE
-	BATTLE_ACTION_DIVINE_SHIELD
-	BATTLE_ACTION_HALVING
-	BATTLE_ACTION_HEAL
-	BATTLE_ACTION_LIFE_LEECH
-	BATTLE_ACTION_MAGIC_REFLECT
-	BATTLE_ACTION_POISON
-	BATTLE_ACTION_REMOVE_DIVINE_SHIELD
-	BATTLE_ACTION_REPAIR
-	BATTLE_ACTION_RESURRECT
-	BATTLE_ACTION_RETALIATE
-	BATTLE_ACTION_RETURN_FIRE
-	BATTLE_ACTION_STUN
-	BATTLE_ACTION_SCAVENGER
-	BATTLE_ACTION_SNARE
-	BATTLE_ACTION_TANK_HEAL
-	BATTLE_ACTION_THORNS
-	BATTLE_ACTION_TRIAGE
+	BATTLE_ACTION_AFFLICTION           = "Affliction"
+	BATTLE_ACTION_BACKFIRE             = "Backfire"
+	BATTLE_ACTION_BLAST                = "Blast"
+	BATTLE_ACTION_BLOODLUST            = "Bloodlust"
+	BATTLE_ACTION_CLEANSE              = "Cleanse"
+	BATTLE_ACTION_CRIPPLE              = "Cripple"
+	BATTLE_ACTION_DIVINE_SHIELD        = "Divine shield"
+	BATTLE_ACTION_HALVING              = "Halving"
+	BATTLE_ACTION_HEAL                 = "Heal"
+	BATTLE_ACTION_LIFE_LEECH           = "Life leech"
+	BATTLE_ACTION_MAGIC_REFLECT        = "Magic reflect"
+	BATTLE_ACTION_POISON               = "Poison"
+	BATTLE_ACTION_REMOVE_DIVINE_SHIELD = "Remove divine shield"
+	BATTLE_ACTION_REPAIR               = "Repair"
+	BATTLE_ACTION_RESURRECT            = "Resurrect"
+	BATTLE_ACTION_RETALIATE            = "Retaliate"
+	BATTLE_ACTION_RETURN_FIRE          = "Return fire"
+	BATTLE_ACTION_STUN                 = "Stun"
+	BATTLE_ACTION_SCAVENGER            = "Scavenger"
+	BATTLE_ACTION_SNARE                = "Snare"
+	BATTLE_ACTION_TANK_HEAL            = "Tank heal"
+	BATTLE_ACTION_THORNS               = "Thorns"
+	BATTLE_ACTION_TRIAGE               = "Triage"
 )
 
-type Ruleset int
+type Ruleset string
 
 const (
-	RULESET_AIM_TRUE Ruleset = iota
-	RULESET_ARMORED_UP
-	RULESET_BACK_TO_BASICS
-	RULESET_BROKEN_ARROWS
-	RULESET_CLOSE_RANGE
-	RULESET_EARTHQUAKE
-	RULESET_EQUAL_OPPORTUNITY
-	RULESET_EQUALIZER
-	RULESET_EVEN_STEVENS
-	RULESET_EXPLOSIVE_WEAPONRY
-	RULESET_FOG_OF_WAR
-	RULESET_HEALED_OUT
-	RULESET_HEAVY_HITTERS
-	RULESET_HOLY_PROTECTION
-	RULESET_KEEP_YOUR_DISTANCE
-	RULESET_LITTLE_LEAGUE
-	RULESET_LOST_LEGENDARIES
-	RULESET_LOST_MAGIC
-	RULESET_MELEE_MAYHEM
-	RULESET_NOXIOUS_FUMES
-	RULESET_ODD_ONES_OUT
-	RULESET_REVERSE_SPEED
-	RULESET_RISE_OF_THE_COMMONS
-	RULESET_SILENCED_SUMMONERS
-	RULESET_SPREADING_FURY
-	RULESET_STAMPEDE
-	RULESET_STANDARD
-	RULESET_SUPER_SNEAK
-	RULESET_TAKING_SIDES
-	RULESET_TARGET_PRACTICE
-	RULESET_UNPROTECTED
-	RULESET_UP_CLOSE_AND_PERSONAL
-	RULESET_WEAK_MAGIC
+	RULESET_AIM_TRUE              Ruleset = "Aim True"
+	RULESET_ARMORED_UP                    = "Armored Up"
+	RULESET_BACK_TO_BASICS                = "Back to Basics"
+	RULESET_BROKEN_ARROWS                 = "Broken Arrows"
+	RULESET_CLOSE_RANGE                   = "Close Range"
+	RULESET_EARTHQUAKE                    = "Earthquake"
+	RULESET_EQUAL_OPPORTUNITY             = "Equal Opportunity"
+	RULESET_EQUALIZER                     = "Equalizer"
+	RULESET_EVEN_STEVENS                  = "Even Stevens"
+	RULESET_EXPLOSIVE_WEAPONRY            = "Explosive Weaponry"
+	RULESET_FOG_OF_WAR                    = "Fog of War"
+	RULESET_HEALED_OUT                    = "Healed Out"
+	RULESET_HEAVY_HITTERS                 = "Heavy Hitters"
+	RULESET_HOLY_PROTECTION               = "Holy Protection"
+	RULESET_KEEP_YOUR_DISTANCE            = "Keep Your Distance"
+	RULESET_LITTLE_LEAGUE                 = "Little League"
+	RULESET_LOST_LEGENDARIES              = "Lost Legendaries"
+	RULESET_LOST_MAGIC                    = "Lost Magic"
+	RULESET_MELEE_MAYHEM                  = "Melee Mayhem"
+	RULESET_NOXIOUS_FUMES                 = "Noxious Fumes"
+	RULESET_ODD_ONES_OUT                  = "Odd Ones Out"
+	RULESET_REVERSE_SPEED                 = "Reverse Speed"
+	RULESET_RISE_OF_THE_COMMONS           = "Rise of the Commons"
+	RULESET_SILENCED_SUMMONERS            = "Silenced Summoners"
+	RULESET_SPREADING_FURY                = "Spreading Fury"
+	RULESET_STAMPEDE                      = "Stampede"
+	RULESET_STANDARD                      = "Standard"
+	RULESET_SUPER_SNEAK                   = "Super Sneak"
+	RULESET_TAKING_SIDES                  = "Taking Sides"
+	RULESET_TARGET_PRACTICE               = "Target Practice"
+	RULESET_UNPROTECTED                   = "Unprotected"
+	RULESET_UP_CLOSE_AND_PERSONAL         = "Up Close & Personal"
+	RULESET_WEAK_MAGIC                    = "Weak Magic"
 )
 
 type Stat int

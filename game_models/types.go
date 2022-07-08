@@ -1,64 +1,68 @@
 package game_models
 
 type FlatCardStats struct {
-	Abilities []Ability
-	Mana      int
-	Attack    int
-	Ranged    int
-	Magic     int
-	Armor     int
-	Health    int
-	Speed     int
+	Mana      int       `json:"mana"`
+	Attack    int       `json:"attack"`
+	Ranged    int       `json:"ranged"`
+	Magic     int       `json:"magic"`
+	Armor     int       `json:"armor"`
+	Health    int       `json:"health"`
+	Speed     int       `json:"speed"`
+	Abilities []Ability `json:"abilities,omitempty"`
 }
 
 type CardStatsByLevel struct {
-	Abilities [][]Ability
-	Mana      []int
-	Attack    []int
-	Ranged    []int
-	Magic     []int
-	Armor     []int
-	Health    []int
-	Speed     []int
+	Mana      []int       `json:"mana"`
+	Attack    []int       `json:"attack"`
+	Ranged    []int       `json:"ranged"`
+	Magic     []int       `json:"magic"`
+	Armor     []int       `json:"armor"`
+	Health    []int       `json:"health"`
+	Speed     []int       `json:"speed"`
+	Abilities [][]Ability `json:"abilities,omitempty"`
 }
 
 type CardDetailDistribution struct {
 	CardDetailID int
 	Gold         bool
-	Edition      string
+	Edition      int
 }
 
 type CardDetail struct {
-	ID              int
-	Name            string
-	Color           CardColor
-	Card            CardType
-	Rarity          int
-	IsStarter       bool
-	Editions        string
-	DropRate        int
-	SubType         string
-	CreatedBlockNum int
-	LastUpdateTx    string
-	TotalPrinted    int
-	IsPromo         bool
-	Tier            string
-	Distribution    []CardDetailDistribution
+	ID              int                      `json:"id"`
+	Name            string                   `json:"name"`
+	Color           CardColor                `json:"color"`
+	Type            CardType                 `json:"type"`
+	Rarity          int                      `json:"rarity"`
+	IsStarter       bool                     `json:"is_starter"`
+	Editions        string                   `json:"editions"`
+	DropRate        int                      `json:"drop_rate"`
+	SubType         string                   `json:"sub_type"`
+	CreatedBlockNum int                      `json:"created_block_num"`
+	LastUpdateTx    string                   `json:"last_update_tx"`
+	TotalPrinted    int                      `json:"total_printed"`
+	IsPromo         bool                     `json:"is_promo"`
+	Tier            int                      `json:"tier"`
+	Distribution    []CardDetailDistribution `json:"distribution"`
+	Stats           CardRawStats             `json:"stats"`
 }
 
-type SummonerCardDetail struct {
-	CardDetail
-	Stats FlatCardStats
+type CardRawStats struct {
+	Mana      any   `json:"mana"`
+	Attack    any   `json:"attack"`
+	Ranged    any   `json:"ranged"`
+	Magic     any   `json:"magic"`
+	Armor     any   `json:"armor"`
+	Health    any   `json:"health"`
+	Speed     any   `json:"speed"`
+	Abilities []any `json:"abilities,omitempty"`
 }
 
-type MonsterCardDetail struct {
-	CardDetail
-	Stats CardStatsByLevel
-}
+type CardDetailMap map[int]CardDetail
 
 type Team struct {
-	Summoner SummonerCardDetail
-	Monsters []MonsterCardDetail
+	Summoner CardDetail
+	Monsters []CardDetail
 }
 
 type BattleDamage struct {
@@ -69,36 +73,51 @@ type BattleDamage struct {
 }
 
 type BattleHistory struct {
-	battle_queue_id_1       string
-	battle_queue_id_2       string
-	player_1_rating_initial int
-	player_2_rating_initial int
-	winner                  string
-	player_1_rating_final   int
-	player_2_rating_final   int
-	player_1                string
-	player_2                string
-	created_date            string
-	mana_cap                int
-	ruleset                 string
-	inactive                string
-	settings                string
-	details                 string
+	BattleQueueId1       string `json:"battle_queue_id_1"`
+	BattleQueueId2       string `json:"battle_queue_id_2"`
+	Player1RatingInitial int    `json:"player_1_rating_initial"`
+	Player2RatingInitial int    `json:"player_2_rating_initial"`
+	Winner               string `json:"winner"`
+	Player1RatingFinal   int    `json:"player_1_rating_final"`
+	Player2RatingFinal   int    `json:"player_2_rating_final"`
+	Player1              string `json:"player_1"`
+	Player2              string `json:"player_2"`
+	CreatedDate          string `json:"created_date"`
+	ManaCap              int    `json:"created_block_num"`
+	Ruleset              string `json:"ruleset"`
+	Inactive             string `json:"inactive"`
+	Settings             string `json:"settings"`
+	Details              string `json:"details"`
+}
+
+type BattleDetails struct {
+	Loser  string     `json:"loser"`
+	Winner string     `json:"winner"`
+	Type   string     `json:"type"`
+	Team1  BattleTeam `json:"team1"`
+	Team2  BattleTeam `json:"team2"`
 }
 
 type CollectionCard struct {
-	Player       string
-	UUID         string
-	CardDetailID int
-	IsGoldFoil   bool
-	Edition      int
-	Level        int
+	UID          string      `json:"uid"`
+	XP           int         `json:"xp"`
+	CardDetailID int         `json:"card_detail_id"`
+	Gold         bool        `json:"gold"`
+	Edition      int         `json:"edition"`
+	Level        int         `json:"level"`
+	State        BattleState `json:"state"`
+}
+
+type BattleState struct {
+	Alive      bool  `json:"alive"`
+	Stats      []int `json:"stats"`
+	BaseHealth int   `json:"base_health"`
 }
 
 type BattleTeam struct {
 	Color    string
 	Monsters []CollectionCard
-	Summoner []CollectionCard
+	Summoner CollectionCard
 	Player   string
 	Rating   int
 }
@@ -128,7 +147,7 @@ type BattleLog struct {
 	/** The target of the action. This is a snapshot of the target AFTER the action has been performed. */
 	Target GameCardInterface
 	/** The action */
-	Action BattleLogAction
+	Action AdditionalBattleAction
 	/** The value, can be the amount of damage, or heal, etc. Based on the action */
 	Value int
 }

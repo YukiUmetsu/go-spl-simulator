@@ -62,7 +62,7 @@ func DoRulesetPreGamePostBuff(rulesets []Ruleset, team1 GameTeam, team2 GameTeam
 	}
 }
 
-func ApplyToBothTeamMonsters(team1 GameTeam, team2 GameTeam, fn func(MonsterCard)) {
+func ApplyToBothTeamMonsters(team1 GameTeam, team2 GameTeam, fn func(*MonsterCard)) {
 	for _, m := range team1.GetMonstersList() {
 		fn(m)
 	}
@@ -72,29 +72,29 @@ func ApplyToBothTeamMonsters(team1 GameTeam, team2 GameTeam, fn func(MonsterCard
 }
 
 /* All monsters gain 2 armors */
-func ApplyArmorUpRuleset(m MonsterCard) {
+func ApplyArmorUpRuleset(m *MonsterCard) {
 	m.AddSummonerArmor(2)
 }
 
 /* All monsters lose all of their abilities */
-func ApplyBackToBasicsRuleset(m MonsterCard) {
+func ApplyBackToBasicsRuleset(m *MonsterCard) {
 	m.RemoveAllAbilities()
 }
 
 /* All monsters have Close Range */
-func ApplyCloseRangeRuleset(m MonsterCard) {
+func ApplyCloseRangeRuleset(m *MonsterCard) {
 	m.AddAbilitiesWithArray([]Ability{ABILITY_CLOSE_RANGE})
 }
 
 /* All monsters have Opportunity */
-func ApplyEqualOpportunityRuleset(m MonsterCard) {
+func ApplyEqualOpportunityRuleset(m *MonsterCard) {
 	if !m.HasAbility(ABILITY_SNEAK) && !m.HasAbility(ABILITY_SNIPE) {
 		m.AddAbilitiesWithArray([]Ability{ABILITY_OPPORTUNITY})
 	}
 }
 
 func ApplyEqualizer(team1 GameTeam, team2 GameTeam) {
-	allMonsters := make([]MonsterCard, 0)
+	allMonsters := make([]*MonsterCard, 0)
 	allMonsters = append(team1.GetMonstersList(), team2.GetMonstersList()...)
 	highestHp := 0
 	for _, m := range allMonsters {
@@ -107,35 +107,35 @@ func ApplyEqualizer(team1 GameTeam, team2 GameTeam) {
 }
 
 /* All monsters have blast */
-func ApplyExplosiveWeaponRuleset(m MonsterCard) {
+func ApplyExplosiveWeaponRuleset(m *MonsterCard) {
 	m.AddAbilitiesWithArray([]Ability{ABILITY_BLAST})
 }
 
 /* No Sneak or Snipe */
-func ApplyFogOfWarRuleset(m MonsterCard) {
+func ApplyFogOfWarRuleset(m *MonsterCard) {
 	m.RemoveAbility(ABILITY_SNEAK)
 	m.RemoveAbility(ABILITY_SNIPE)
 }
 
 /* No healing abilities */
-func ApplyHealedOutRuleset(m MonsterCard) {
+func ApplyHealedOutRuleset(m *MonsterCard) {
 	m.RemoveAbility(ABILITY_TANK_HEAL)
 	m.RemoveAbility(ABILITY_HEAL)
 	m.RemoveAbility(ABILITY_TRIAGE)
 }
 
 /* All monsters have holy protection */
-func ApplyHolyProtectionRuleset(m MonsterCard) {
+func ApplyHolyProtectionRuleset(m *MonsterCard) {
 	m.AddAbilitiesWithArray([]Ability{ABILITY_DIVINE_SHIELD})
 }
 
 /* Monsters can attack from any position */
-func ApplyMeleeMayhemRuleset(m MonsterCard) {
+func ApplyMeleeMayhemRuleset(m *MonsterCard) {
 	m.AddAbilitiesWithArray([]Ability{ABILITY_MELEE_MAYHEM})
 }
 
 /* All monsters poisoned */
-func ApplyNoxiousFumesRuleset(m MonsterCard) {
+func ApplyNoxiousFumesRuleset(m *MonsterCard) {
 	m.AddDebuff(ABILITY_POISON)
 }
 
@@ -145,7 +145,7 @@ func ApplySilencedSummonersRuleset(team1 GameTeam, team2 GameTeam) {
 	silenceSummoner(team2.GetSummoner())
 }
 
-func silenceSummoner(summoner SummonerCard) {
+func silenceSummoner(summoner *SummonerCard) {
 	summoner.RemoveAllAbilities()
 	summoner.Health = 0
 	summoner.Armor = 0
@@ -156,36 +156,36 @@ func silenceSummoner(summoner SummonerCard) {
 }
 
 /* All monsters has enrage */
-func ApplySpreadingFuryRuleset(m MonsterCard) {
+func ApplySpreadingFuryRuleset(m *MonsterCard) {
 	m.AddAbilitiesWithArray([]Ability{ABILITY_ENRAGE})
 }
 
 /* All Melee monsters have sneak */
-func ApplySuperSneakRuleset(m MonsterCard) {
+func ApplySuperSneakRuleset(m *MonsterCard) {
 	if m.Melee > 0 {
 		m.AddAbilitiesWithArray([]Ability{ABILITY_SNEAK})
 	}
 }
 
 /* All monsters have void armor */
-func ApplyWeakMagicRuleset(m MonsterCard) {
+func ApplyWeakMagicRuleset(m *MonsterCard) {
 	m.AddAbilitiesWithArray([]Ability{ABILITY_VOID_ARMOR})
 }
 
 /* All ranged and magic have snipe */
-func ApplyTargetPracticeRuleset(m MonsterCard) {
+func ApplyTargetPracticeRuleset(m *MonsterCard) {
 	if m.Ranged > 0 || m.Magic > 0 {
 		m.AddAbilitiesWithArray([]Ability{ABILITY_SNIPE})
 	}
 }
 
 /* Monsters don't have armor */
-func ApplyUnprotectedRuleset(m MonsterCard) {
+func ApplyUnprotectedRuleset(m *MonsterCard) {
 	m.Armor = 0
 	m.StartingArmor = -99
 }
 
-func ApplyHeavyHittersRuleset(m MonsterCard) {
+func ApplyHeavyHittersRuleset(m *MonsterCard) {
 	m.AddAbilitiesWithArray([]Ability{ABILITY_KNOCK_OUT})
 }
 

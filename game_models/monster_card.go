@@ -1,6 +1,7 @@
 package game_models
 
 import (
+	"fmt"
 	"math"
 
 	utils "github.com/YukiUmetsu/go-spl-simulator/game_utils"
@@ -8,7 +9,7 @@ import (
 
 type MonsterCard struct {
 	GameCard
-	cardDetail MonsterCardDetail
+	cardDetail CardDetail
 
 	// only monsters
 	cardPosition    int
@@ -22,10 +23,66 @@ type MonsterCard struct {
 	hadDivineShield bool
 }
 
-func (c *MonsterCard) Setup(cardDetail MonsterCardDetail, cardLevel int) {
+func (c *MonsterCard) Setup(cardDetail CardDetail, cardLevel int) {
 	c.cardDetail = cardDetail
 	c.CardLevel = cardLevel - 1
-	c.SetStats(c.cardDetail.Stats)
+	var cardStatsByLevel CardStatsByLevel
+
+	// convert interface to ability
+	abilityByLevel := make([][]Ability, 0)
+	for _, abilityArr := range cardDetail.Stats.Abilities {
+		abilitiesInLevel := []Ability{}
+		for _, ability := range abilityArr.([]any) {
+			abilitiesInLevel = append(abilitiesInLevel, Ability(ability.(string)))
+		}
+		abilityByLevel = append(abilityByLevel, abilitiesInLevel)
+	}
+	cardStatsByLevel.Abilities = abilityByLevel
+
+	// convert interface to []int
+	manaByLevel := make([]int, 0)
+	for _, m := range cardDetail.Stats.Mana.([]any) {
+		manaByLevel = append(manaByLevel, int(m.(float64)))
+	}
+	cardStatsByLevel.Mana = manaByLevel
+
+	atkByLevel := make([]int, 0)
+	for _, m := range cardDetail.Stats.Attack.([]any) {
+		atkByLevel = append(atkByLevel, int(m.(float64)))
+	}
+	cardStatsByLevel.Attack = atkByLevel
+
+	rangeByLevel := make([]int, 0)
+	for _, m := range cardDetail.Stats.Ranged.([]any) {
+		rangeByLevel = append(rangeByLevel, int(m.(float64)))
+	}
+	cardStatsByLevel.Ranged = rangeByLevel
+
+	magicByLevel := make([]int, 0)
+	for _, m := range cardDetail.Stats.Magic.([]any) {
+		magicByLevel = append(magicByLevel, int(m.(float64)))
+	}
+	cardStatsByLevel.Magic = magicByLevel
+
+	armorByLevel := make([]int, 0)
+	for _, m := range cardDetail.Stats.Armor.([]any) {
+		armorByLevel = append(armorByLevel, int(m.(float64)))
+	}
+	cardStatsByLevel.Armor = armorByLevel
+
+	speedByLevel := make([]int, 0)
+	for _, m := range cardDetail.Stats.Speed.([]any) {
+		speedByLevel = append(speedByLevel, int(m.(float64)))
+	}
+	cardStatsByLevel.Speed = speedByLevel
+
+	hpByLevel := make([]int, 0)
+	for _, m := range cardDetail.Stats.Health.([]any) {
+		hpByLevel = append(hpByLevel, int(m.(float64)))
+	}
+	cardStatsByLevel.Health = hpByLevel
+
+	c.SetStats(cardStatsByLevel)
 }
 
 func (c *MonsterCard) SetTeam(teamNumber TeamNumber) {
@@ -59,12 +116,12 @@ func (c *MonsterCard) AddAbilities(abilitiesArray [][]Ability) {
 	}
 }
 
-func (c *MonsterCard) GetCardDetail() MonsterCardDetail {
+func (c *MonsterCard) GetCardDetail() CardDetail {
 	return c.cardDetail
 }
 
 func (c *MonsterCard) HasAbility(ability Ability) bool {
-	return c.HasAbility(ability)
+	return utils.Contains(c.Abilities, ability)
 }
 
 func (c *MonsterCard) RemoveAbility(ability Ability) {
@@ -110,6 +167,9 @@ func (c *MonsterCard) AddBuff(buff Ability) {
 	} else {
 		buffsAmount = 1
 	}
+	if c.BuffMap == nil {
+		c.BuffMap = make(map[Ability]int)
+	}
 	c.BuffMap[buff] = buffsAmount
 
 	if buff == ABILITY_SCAVENGER {
@@ -152,6 +212,9 @@ func (c *MonsterCard) AddDebuff(debuff Ability) {
 		debuffAmount = 1
 	}
 
+	if c.DebuffMap == nil {
+		c.DebuffMap = make(map[Ability]int)
+	}
 	c.DebuffMap[debuff] = debuffAmount
 }
 
@@ -625,4 +688,8 @@ func (c *MonsterCard) RemoveAllBuff(buff Ability) {
 	for i := 0; i < buffAmount; i++ {
 		c.RemoveBuff(buff)
 	}
+}
+
+func (c *MonsterCard) String() string {
+	return fmt.Sprintf("ID: %v, Name: %s, Lvl: %v, Team: %v, HP: %v, speed: %v, buffs: %+v, debuffs: %+v", c.cardDetail.ID, c.cardDetail.Name, c.CardLevel, c.GetTeamNumber(), c.Health, c.Speed, c.BuffMap, c.DebuffMap)
 }

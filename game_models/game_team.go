@@ -6,11 +6,11 @@ import (
 )
 
 type GameTeam struct {
-	summoner    SummonerCard
-	monsterList []MonsterCard
+	summoner    *SummonerCard
+	monsterList []*MonsterCard
 }
 
-func (t *GameTeam) Create(summoner SummonerCard, monsterList []MonsterCard) {
+func (t *GameTeam) Create(summoner *SummonerCard, monsterList []*MonsterCard) {
 	t.summoner = summoner
 	t.monsterList = monsterList
 	if len(t.monsterList) > 1 {
@@ -43,11 +43,11 @@ func (t *GameTeam) GetMonsterPosition(monster *MonsterCard) int {
 	return -1
 }
 
-func (t *GameTeam) GetSummoner() SummonerCard {
+func (t *GameTeam) GetSummoner() *SummonerCard {
 	return t.summoner
 }
 
-func (t *GameTeam) GetMonstersList() []MonsterCard {
+func (t *GameTeam) GetMonstersList() []*MonsterCard {
 	return t.monsterList
 }
 
@@ -73,7 +73,7 @@ func (t *GameTeam) GetAliveMonsters() []*MonsterCard {
 	aliveMonsters := make([]*MonsterCard, 0)
 	for _, monster := range t.monsterList {
 		if monster.IsAlive() {
-			aliveMonsters = append(aliveMonsters, &monster)
+			aliveMonsters = append(aliveMonsters, monster)
 		}
 	}
 	return aliveMonsters

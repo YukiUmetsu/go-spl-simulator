@@ -1,6 +1,7 @@
 package game_models
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 )
@@ -137,5 +138,19 @@ func MonsterTurnComparator(m1 *MonsterCard, m2 *MonsterCard) bool {
 		return ResolveFriendlyTies(m1, m2) > 0
 	} else {
 		return RandomTieBreaker() > 0
+	}
+}
+
+func PrintMonsterListPointer(label string, array []*MonsterCard) {
+	fmt.Printf("\n\n%s, length: %d\n", label, len(array))
+	for _, item := range array {
+		fmt.Println(item)
+	}
+}
+
+func PrintMonsterList(label string, array []MonsterCard) {
+	fmt.Printf("\n\n%s, length: %d\n", label, len(array))
+	for _, item := range array {
+		fmt.Println(item)
 	}
 }

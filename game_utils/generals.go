@@ -1,7 +1,10 @@
 package game_utils
 
 import (
+    "encoding/json"
     "golang.org/x/exp/constraints"
+    "log"
+    "fmt"
 )
 
 func Remove[T comparable](l []T, item T) []T {
@@ -43,4 +46,20 @@ func StrArrContains(s []string, e string) bool {
         }
     }
     return false
+}
+
+func PrintStructnWithLabel(label string, value any) {
+	jsonData, err := json.Marshal(&value)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("\n%s %+v\n", label, string(jsonData))
+}
+
+func PrintStruct(value any) {
+	jsonData, err := json.Marshal(&value)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(string(jsonData))
 }

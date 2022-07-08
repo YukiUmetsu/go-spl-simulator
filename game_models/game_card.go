@@ -11,6 +11,7 @@ type GameCardInterface interface {
 	GetDebuffs() map[Ability]int
 	GetBuffs() map[Ability]int
 	Clone() GameCardInterface
+	String() string
 }
 
 type GameCard struct {

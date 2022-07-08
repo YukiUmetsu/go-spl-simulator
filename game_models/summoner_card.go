@@ -1,18 +1,37 @@
 package game_models
 
 import (
+	"fmt"
+
 	utils "github.com/YukiUmetsu/go-spl-simulator/game_utils"
 )
 
 type SummonerCard struct {
 	GameCard
-	cardDetail SummonerCardDetail
+	cardDetail CardDetail
 }
 
-func (c *SummonerCard) Setup(cardDetail SummonerCardDetail, cardLevel int) {
+func (c *SummonerCard) Setup(cardDetail CardDetail, cardLevel int) {
 	c.cardDetail = cardDetail
 	c.CardLevel = cardLevel - 1
-	c.SetStats(c.cardDetail.Stats)
+	var summonerStats FlatCardStats
+
+	abilities := make([]Ability, 0)
+	for _, a := range cardDetail.Stats.Abilities {
+		if len(a.(string)) < 1 {
+			continue
+		}
+		abilities = append(abilities, Ability(a.(string)))
+	}
+	summonerStats.Abilities = abilities
+	summonerStats.Mana = int(cardDetail.Stats.Mana.(float64))
+	summonerStats.Attack = int(cardDetail.Stats.Attack.(float64))
+	summonerStats.Ranged = int(cardDetail.Stats.Ranged.(float64))
+	summonerStats.Magic = int(cardDetail.Stats.Magic.(float64))
+	summonerStats.Armor = int(cardDetail.Stats.Armor.(float64))
+	summonerStats.Speed = int(cardDetail.Stats.Speed.(float64))
+	summonerStats.Health = int(cardDetail.Stats.Health.(float64))
+	c.SetStats(summonerStats)
 }
 
 func (c *SummonerCard) SetTeam(teamNumber TeamNumber) {
@@ -32,22 +51,18 @@ func (c *SummonerCard) SetStats(stats FlatCardStats) {
 	c.AddAbilities(stats.Abilities)
 }
 
-func (c *SummonerCard) GetStat(stat int) FlatCardStats {
-	return c.cardDetail.Stats
-}
-
 func (c *SummonerCard) AddAbilities(abilities []Ability) {
 	for _, ability := range abilities {
 		c.Abilities = append(c.Abilities, ability)
 	}
 }
 
-func (c *SummonerCard) GetCardDetail() SummonerCardDetail {
+func (c *SummonerCard) GetCardDetail() CardDetail {
 	return c.cardDetail
 }
 
 func (c *SummonerCard) HasAbility(ability Ability) bool {
-	return c.HasAbility(ability)
+	return utils.Contains(c.Abilities, ability)
 }
 
 func (c *SummonerCard) RemoveAbility(ability Ability) {
@@ -110,4 +125,8 @@ func (c *SummonerCard) AddAbilitiesWithArray(abilities []Ability) {
 	for _, a := range abilities {
 		c.Abilities = append(c.Abilities, a)
 	}
+}
+
+func (c *SummonerCard) String() string {
+	return fmt.Sprintf("ID: %v, Name: %s, Lvl: %v, Team: %v, Abilities: %v", c.cardDetail.ID, c.cardDetail.Name, c.CardLevel, c.GetTeamNumber(), c.Abilities)
 }
