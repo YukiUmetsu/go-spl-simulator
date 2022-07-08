@@ -2,7 +2,7 @@ package game_models
 
 import utils "github.com/YukiUmetsu/go-spl-simulator/game_utils"
 
-func DoRulesetPreGameBuff(rulesets []Ruleset, team1 GameTeam, team2 GameTeam) {
+func DoRulesetPreGameBuff(rulesets []Ruleset, team1, team2 *GameTeam) {
 	if utils.Contains(rulesets, RULESET_ARMORED_UP) {
 		ApplyToBothTeamMonsters(team1, team2, ApplyArmorUpRuleset)
 	}
@@ -56,13 +56,13 @@ func DoRulesetPreGameBuff(rulesets []Ruleset, team1 GameTeam, team2 GameTeam) {
 	}
 }
 
-func DoRulesetPreGamePostBuff(rulesets []Ruleset, team1 GameTeam, team2 GameTeam) {
+func DoRulesetPreGamePostBuff(rulesets []Ruleset, team1, team2 *GameTeam) {
 	if utils.Contains(rulesets, RULESET_UNPROTECTED) {
 		ApplyToBothTeamMonsters(team1, team2, ApplyUnprotectedRuleset)
 	}
 }
 
-func ApplyToBothTeamMonsters(team1 GameTeam, team2 GameTeam, fn func(*MonsterCard)) {
+func ApplyToBothTeamMonsters(team1, team2 *GameTeam, fn func(*MonsterCard)) {
 	for _, m := range team1.GetMonstersList() {
 		fn(m)
 	}
@@ -93,7 +93,7 @@ func ApplyEqualOpportunityRuleset(m *MonsterCard) {
 	}
 }
 
-func ApplyEqualizer(team1 GameTeam, team2 GameTeam) {
+func ApplyEqualizer(team1, team2 *GameTeam) {
 	allMonsters := make([]*MonsterCard, 0)
 	allMonsters = append(team1.GetMonstersList(), team2.GetMonstersList()...)
 	highestHp := 0
@@ -140,7 +140,7 @@ func ApplyNoxiousFumesRuleset(m *MonsterCard) {
 }
 
 /* Summoners don't do anything */
-func ApplySilencedSummonersRuleset(team1 GameTeam, team2 GameTeam) {
+func ApplySilencedSummonersRuleset(team1, team2 *GameTeam) {
 	silenceSummoner(team1.GetSummoner())
 	silenceSummoner(team2.GetSummoner())
 }

@@ -141,13 +141,17 @@ type BattleAllowedCards struct {
 
 type BattleLogAction interface{}
 
+type Stringer interface {
+	String() string
+}
+
 type BattleLog struct {
 	/** The summoner or monster performing the action. This is a snapshot of the actor AFTER the action has been performed. */
 	Actor GameCardInterface
 	/** The target of the action. This is a snapshot of the target AFTER the action has been performed. */
 	Target GameCardInterface
 	/** The action */
-	Action AdditionalBattleAction
+	Action Stringer
 	/** The value, can be the amount of damage, or heal, etc. Based on the action */
 	Value int
 }

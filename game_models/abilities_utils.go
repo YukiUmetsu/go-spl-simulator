@@ -89,7 +89,7 @@ func MonsterHasDebuffAbilities(m *MonsterCard) []Ability {
 	}
 	monsterDebuffs := []Ability{}
 	debuffs := GetMonsterPreGameDebuffAbilities()
-	for _, ability := range m.GameCard.Abilities {
+	for _, ability := range m.Abilities {
 		if utils.Contains(debuffs, ability) {
 			monsterDebuffs = append(monsterDebuffs, ability)
 		}
@@ -103,7 +103,7 @@ func MonsterHasBuffsAbilities(m *MonsterCard) []Ability {
 		return monsterBuffs
 	}
 	buffs := GetMonsterPreGameBuffAbilities()
-	for _, ability := range m.GameCard.Abilities {
+	for _, ability := range m.Abilities {
 		if utils.Contains(buffs, ability) {
 			monsterBuffs = append(monsterBuffs, ability)
 		}

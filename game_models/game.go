@@ -9,18 +9,18 @@ import (
 )
 
 type Game struct {
-	team1      GameTeam
-	team2      GameTeam
+	team1      *GameTeam
+	team2      *GameTeam
 	rulesets   []Ruleset
 	battleLogs []BattleLog
 	shouldLog  bool
 	/* 0: unknown, 1: team1, 2: team2, 3: Tie */
 	winner       TeamNumber
-	deadMonsters []MonsterCard
+	deadMonsters []*MonsterCard
 	roundNumber  int
 }
 
-func (g *Game) Create(team1 GameTeam, team2 GameTeam, rulesets []Ruleset, shouldLog bool) {
+func (g *Game) Create(team1, team2 *GameTeam, rulesets []Ruleset, shouldLog bool) {
 	g.team1 = team1
 	g.team2 = team2
 	g.rulesets = rulesets
@@ -84,6 +84,10 @@ func (g *Game) DoSummonerPreGameBuff(summoner *SummonerCard, friendlyMonsters []
 	// add summoner abilities
 	for _, ability := range GetSummonerAbilityAbilities() {
 		if summoner.HasAbility(ability) {
+			logAction := "Summoner Pre Game Ability Buff " + string(ability)
+			for _, m := range friendlyMonsters {
+				g.CreateAndAddBattleLog(AdditionalBattleAction(logAction), summoner, m, 0)
+			}
 			g.ApplyAbilityToMonsters(friendlyMonsters, ability)
 		}
 	}
@@ -91,21 +95,27 @@ func (g *Game) DoSummonerPreGameBuff(summoner *SummonerCard, friendlyMonsters []
 	// add summoner stats (e.g. +1 melee, +1 archery, +1 magic etc...)
 	for _, m := range friendlyMonsters {
 		if summoner.Armor > 0 {
+			g.CreateAndAddBattleLog(AdditionalBattleAction("Summoner Armor Buff"), summoner, m, summoner.Armor)
 			m.AddSummonerArmor(summoner.Armor)
 		}
 		if summoner.Health > 0 {
+			g.CreateAndAddBattleLog(AdditionalBattleAction("Summoner Health Buff"), summoner, m, summoner.Health)
 			m.AddSummonerHealth(summoner.Health)
 		}
 		if summoner.Speed > 0 {
+			g.CreateAndAddBattleLog(AdditionalBattleAction("Summoner Speed Buff"), summoner, m, summoner.Speed)
 			m.AddSummonerSpeed(summoner.Speed)
 		}
 		if summoner.Melee > 0 {
+			g.CreateAndAddBattleLog(AdditionalBattleAction("Summoner Melee Buff"), summoner, m, summoner.Melee)
 			m.AddSummonerMelee(summoner.Melee)
 		}
 		if summoner.Ranged > 0 {
+			g.CreateAndAddBattleLog(AdditionalBattleAction("Summoner Ranged Buff"), summoner, m, summoner.Ranged)
 			m.AddSummonerRanged(summoner.Ranged)
 		}
 		if summoner.Magic > 0 {
+			g.CreateAndAddBattleLog(AdditionalBattleAction("Summoner Magic Buff"), summoner, m, summoner.Magic)
 			m.AddSummonerMagic(summoner.Magic)
 		}
 	}
@@ -129,22 +139,22 @@ func (g *Game) DoSummonerPreGameDebuff(summoner *SummonerCard, targetMonsters []
 
 	// add summoner stats (e.g. +1 melee, +1 archery, +1 magic etc...)
 	for _, m := range targetMonsters {
-		if summoner.Armor > 0 {
+		if summoner.Armor < 0 {
 			m.AddSummonerArmor(summoner.Armor)
 		}
-		if summoner.Health > 0 {
+		if summoner.Health < 0 {
 			m.AddSummonerHealth(summoner.Health)
 		}
-		if summoner.Speed > 0 {
+		if summoner.Speed < 0 {
 			m.AddSummonerSpeed(summoner.Speed)
 		}
-		if summoner.Melee > 0 {
+		if summoner.Melee < 0 {
 			m.AddSummonerMelee(summoner.Melee)
 		}
-		if summoner.Ranged > 0 {
+		if summoner.Ranged < 0 {
 			m.AddSummonerRanged(summoner.Ranged)
 		}
-		if summoner.Magic > 0 {
+		if summoner.Magic < 0 {
 			m.AddSummonerMagic(summoner.Magic)
 		}
 	}
@@ -158,6 +168,9 @@ func (g *Game) DoMonsterPreGameBuff(friendlyMonsters []*MonsterCard) {
 				continue
 			}
 
+			for _, fm := range friendlyMonsters {
+				g.CreateAndAddBattleLog(AdditionalBattleAction("Monster Pre-Game Buff "+string(buff)), m, fm, 0)
+			}
 			g.ApplyBuffToMonsters(friendlyMonsters, buff)
 		}
 	}
@@ -261,7 +274,7 @@ func (g *Game) FatigueMonsters(roundNumber int) {
 	}
 }
 
-func (g *Game) CreateAndAddBattleLog(action AdditionalBattleAction, cardOne GameCardInterface, cardTwo GameCardInterface, value int) {
+func (g *Game) CreateAndAddBattleLog(action Stringer, cardOne GameCardInterface, cardTwo GameCardInterface, value int) {
 	if !g.shouldLog {
 		return
 	}
@@ -304,7 +317,7 @@ func (g *Game) ProcessIfDead(m *MonsterCard) {
 
 	// monster is dead
 	g.CreateAndAddBattleLog(BATTLE_ACTION_DEATH, m, nil, 0)
-	g.deadMonsters = append(g.deadMonsters, *m)
+	g.deadMonsters = append(g.deadMonsters, m)
 	m.SetHasTurnPassed(true)
 
 	friendlyTeam := g.GetTeamOfMonster(m)
@@ -375,7 +388,7 @@ func (g *Game) ProcessIfDead(m *MonsterCard) {
 func (g *Game) PlaySingleRound() {
 	// pre round buffs etc
 	g.CreateAndAddBattleLog(BATTLE_ACTION_ROUND_START, nil, nil, g.roundNumber+1)
-	g.deadMonsters = []MonsterCard{}
+	g.deadMonsters = []*MonsterCard{}
 	g.DoGamePreRound()
 	g.DoSummonerPreRound(g.team1)
 	g.DoSummonerPreRound(g.team2)
@@ -417,7 +430,7 @@ func (g *Game) DoGamePreRound() {
 }
 
 // Handle Summoner's pre turn actions (e.g. cleanse, tank heal, repair, triage)
-func (g *Game) DoSummonerPreRound(t GameTeam) {
+func (g *Game) DoSummonerPreRound(t *GameTeam) {
 	summoner := t.GetSummoner()
 
 	// Cleanse
@@ -1176,14 +1189,14 @@ func (g *Game) DoPostRoundPoison(monsters []*MonsterCard) {
 	}
 }
 
-func (g *Game) GetTeamOfMonster(m *MonsterCard) GameTeam {
+func (g *Game) GetTeamOfMonster(m *MonsterCard) *GameTeam {
 	if m.GetTeamNumber() == 1 {
 		return g.team1
 	}
 	return g.team2
 }
 
-func (g *Game) GetEnemyTeamOfMonster(m *MonsterCard) GameTeam {
+func (g *Game) GetEnemyTeamOfMonster(m *MonsterCard) *GameTeam {
 	if m.GetTeamNumber() == 1 {
 		return g.team2
 	}
@@ -1197,7 +1210,7 @@ func (g *Game) ProcessIfResurrect(caster GameCardInterface, deadMonster *Monster
 		deadMonster.Resurrect()
 
 		// remove it from the dead monsters list
-		deadMonsterList := make([]MonsterCard, 0)
+		deadMonsterList := make([]*MonsterCard, 0)
 		for _, m := range g.deadMonsters {
 			if m.cardDetail.Name == deadMonster.cardDetail.Name {
 				continue

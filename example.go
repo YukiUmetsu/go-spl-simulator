@@ -71,8 +71,8 @@ func GetHistoricBattle(battleID string) BattleHistory {
 	return bh
 }
 
-func CreateGameTeam(cardDetailMap CardDetailMap, battleTeam BattleTeam) GameTeam {
-	summoner := SummonerCard{}
+func CreateGameTeam(cardDetailMap CardDetailMap, battleTeam BattleTeam) *GameTeam {
+	var summoner SummonerCard
 	summonerDetail := cardDetailMap[battleTeam.Summoner.CardDetailID]
 	summoner.Setup(summonerDetail, battleTeam.Summoner.Level)
 
@@ -85,7 +85,7 @@ func CreateGameTeam(cardDetailMap CardDetailMap, battleTeam BattleTeam) GameTeam
 	}
 	var team GameTeam
 	team.Create(&summoner, monsterList)
-	return team
+	return &team
 }
 
 func CreateGame(cardDetailMap CardDetailMap, battleDetails BattleDetails, rulesets []Ruleset) Game {

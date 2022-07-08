@@ -8,7 +8,21 @@ import (
 )
 
 type MonsterCard struct {
-	GameCard
+	CardLevel      int
+	Team           TeamNumber
+	DebuffMap      map[Ability]int
+	BuffMap        map[Ability]int
+	Abilities      []Ability
+	Speed          int
+	StartingArmor  int
+	Armor          int
+	Health         int
+	StartingHealth int
+	Magic          int
+	Melee          int
+	Ranged         int
+	Mana           int
+
 	cardDetail CardDetail
 
 	// only monsters
@@ -190,7 +204,7 @@ func (c *MonsterCard) AddDebuff(debuff Ability) {
 
 	// the card has immunity and it's not an uncleansable debuff => ignore
 	uncleansableBuffs := GetUncleansableDebuffs()
-	if utils.Contains(c.GameCard.Abilities, ABILITY_IMMUNITY) && !utils.Contains(uncleansableBuffs, debuff) {
+	if utils.Contains(c.Abilities, ABILITY_IMMUNITY) && !utils.Contains(uncleansableBuffs, debuff) {
 		return
 	}
 
@@ -228,23 +242,21 @@ func (c *MonsterCard) SetHasTurnPassed(hasTurnPassed bool) {
 
 func (c *MonsterCard) Clone() GameCardInterface {
 	var clonedCard GameCardInterface = &MonsterCard{
-		cardDetail: c.cardDetail,
-		GameCard: GameCard{
-			CardLevel:      c.CardLevel,
-			Team:           c.Team,
-			DebuffMap:      c.DebuffMap,
-			BuffMap:        c.BuffMap,
-			Abilities:      c.Abilities,
-			Speed:          c.Speed,
-			StartingArmor:  c.StartingArmor,
-			Armor:          c.Armor,
-			StartingHealth: c.StartingHealth,
-			Health:         c.Health,
-			Magic:          c.Magic,
-			Melee:          c.Melee,
-			Ranged:         c.Ranged,
-			Mana:           c.Mana,
-		},
+		cardDetail:     c.cardDetail,
+		CardLevel:      c.CardLevel,
+		Team:           c.Team,
+		DebuffMap:      c.DebuffMap,
+		BuffMap:        c.BuffMap,
+		Abilities:      c.Abilities,
+		Speed:          c.Speed,
+		StartingArmor:  c.StartingArmor,
+		Armor:          c.Armor,
+		StartingHealth: c.StartingHealth,
+		Health:         c.Health,
+		Magic:          c.Magic,
+		Melee:          c.Melee,
+		Ranged:         c.Ranged,
+		Mana:           c.Mana,
 	}
 	clonedCard.SetTeam(c.GetTeamNumber())
 	return clonedCard
@@ -281,15 +293,19 @@ func (c *MonsterCard) GetCardPosition() int {
 }
 
 func (c *MonsterCard) IsAlive() bool {
-	return c.GameCard.Health >= 0
+	return c.Health > 0
 }
 
 func (c *MonsterCard) SetHealth(health int) {
-	c.GameCard.Health = health
+	c.Health = health
+}
+
+func (c *MonsterCard) GetHealth() int {
+	return c.Health
 }
 
 func (c *MonsterCard) AddHealth(amount int) {
-	if !c.IsAlive() {
+	if !c.IsAlive() || amount == 0 {
 		return
 	}
 
@@ -299,12 +315,12 @@ func (c *MonsterCard) AddHealth(amount int) {
 }
 
 func (c *MonsterCard) HasBuff(buff Ability) bool {
-	_, ok := c.GameCard.BuffMap[buff]
+	_, ok := c.BuffMap[buff]
 	return ok
 }
 
 func (c *MonsterCard) GetBuffCount(buff Ability) int {
-	if val, ok := c.GameCard.BuffMap[buff]; ok {
+	if val, ok := c.BuffMap[buff]; ok {
 		return val
 	} else {
 		return 0
@@ -312,12 +328,12 @@ func (c *MonsterCard) GetBuffCount(buff Ability) int {
 }
 
 func (c *MonsterCard) HasDebuff(debuff Ability) bool {
-	_, ok := c.GameCard.DebuffMap[debuff]
+	_, ok := c.DebuffMap[debuff]
 	return ok
 }
 
 func (c *MonsterCard) GetDebuffCount(debuff Ability) int {
-	if val, ok := c.GameCard.DebuffMap[debuff]; ok {
+	if val, ok := c.DebuffMap[debuff]; ok {
 		return val
 	} else {
 		return 0
@@ -348,8 +364,8 @@ func (c *MonsterCard) HasAttack() bool {
 
 func (c *MonsterCard) GetPostAbilityMaxHealth() int {
 	maxHealth := 1
-	if c.GameCard.StartingHealth > maxHealth {
-		maxHealth = c.GameCard.StartingHealth
+	if c.StartingHealth > maxHealth {
+		maxHealth = c.StartingHealth
 	}
 
 	// Life leech and scavenger are affected by last stand multiplier
@@ -372,7 +388,7 @@ func (c *MonsterCard) GetPostAbilityMaxHealth() int {
 		maxHealth = maxHealth - WEAKEN_AMOUNT*c.GetDebuffCount(ABILITY_WEAKEN)
 	}
 	if c.HasBuff(ABILITY_STRENGTHEN) {
-		maxHealth = maxHealth - STRENGTHEN_AMOUNT*c.GetBuffCount(ABILITY_STRENGTHEN)
+		maxHealth = maxHealth + STRENGTHEN_AMOUNT*c.GetBuffCount(ABILITY_STRENGTHEN)
 	}
 
 	// The summoner skill made this starting health 0 or negative
@@ -691,5 +707,5 @@ func (c *MonsterCard) RemoveAllBuff(buff Ability) {
 }
 
 func (c *MonsterCard) String() string {
-	return fmt.Sprintf("ID: %v, Name: %s, Lvl: %v, Team: %v, HP: %v, speed: %v, buffs: %+v, debuffs: %+v", c.cardDetail.ID, c.cardDetail.Name, c.CardLevel, c.GetTeamNumber(), c.Health, c.Speed, c.BuffMap, c.DebuffMap)
+	return fmt.Sprintf("ID: %v, Name: %s, Lvl: %v, Team: %v, HP: %v, Speed: %v, Armor: %v, buffs: %+v, debuffs: %+v", c.cardDetail.ID, c.cardDetail.Name, c.CardLevel, c.GetTeamNumber(), c.Health, c.Speed, c.Armor, c.BuffMap, c.DebuffMap)
 }

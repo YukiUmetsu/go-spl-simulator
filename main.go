@@ -14,10 +14,10 @@ func main() {
 	count := 0
 	for i := 0; i < len(logs); i++ {
 		l := logs[i]
-		if count > 5 {
+		if count > 0 {
 			break
 		}
-		if strings.Contains(string(l.Action), "Round") {
+		if strings.Contains(l.Action.String(), "Round") {
 			count += 1
 			fmt.Printf("\n--------------------------------------\n")
 		}

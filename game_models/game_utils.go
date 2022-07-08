@@ -109,7 +109,7 @@ func RandomTieBreaker() int {
 	return 1
 }
 
-func CardsArrIncludesMonster(cards []MonsterCard, m *MonsterCard) bool {
+func CardsArrIncludesMonster(cards []*MonsterCard, m *MonsterCard) bool {
 	if len(cards) == 0 || m == nil {
 		return false
 	}
