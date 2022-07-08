@@ -13,7 +13,7 @@ type GameTeam struct {
 func (t *GameTeam) Create(summoner *SummonerCard, monsterList []*MonsterCard) {
 	t.summoner = summoner
 	t.monsterList = monsterList
-	if len(t.monsterList) > 1 {
+	if len(t.monsterList) == 1 {
 		t.monsterList[0].SetIsOnlyMonster()
 	}
 	t.SetMonsterPositions()

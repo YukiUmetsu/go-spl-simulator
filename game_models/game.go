@@ -2,6 +2,7 @@ package game_models
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"sort"
 
@@ -70,6 +71,7 @@ func (g *Game) PlayGame() {
 
 	g.team1.SetAllMonsterHealth()
 	g.team2.SetAllMonsterHealth()
+
 	g.PlayRoundsUntilGameEnd(0)
 }
 
@@ -168,10 +170,10 @@ func (g *Game) DoMonsterPreGameBuff(friendlyMonsters []*MonsterCard) {
 				continue
 			}
 
+			g.ApplyBuffToMonsters(friendlyMonsters, buff)
 			for _, fm := range friendlyMonsters {
 				g.CreateAndAddBattleLog(AdditionalBattleAction("Monster Pre-Game Buff "+string(buff)), m, fm, 0)
 			}
-			g.ApplyBuffToMonsters(friendlyMonsters, buff)
 		}
 	}
 }
@@ -184,6 +186,11 @@ func (g *Game) DoMonsterPreGameDebuff(team1Monsters []*MonsterCard, team2Monster
 				continue
 			}
 			g.ApplyDebuffToMonsters(team2Monsters, debuff)
+
+			// battle log
+			for _, m2 := range team2Monsters {
+				g.CreateAndAddBattleLog(AdditionalBattleAction("Monster Pre-Game Debuff "+string(debuff)), m, m2, 0)
+			}
 		}
 
 		// team2 debuff team1
@@ -192,6 +199,11 @@ func (g *Game) DoMonsterPreGameDebuff(team1Monsters []*MonsterCard, team2Monster
 				continue
 			}
 			g.ApplyDebuffToMonsters(team1Monsters, debuff)
+
+			// battle log
+			for _, m1 := range team1Monsters {
+				g.CreateAndAddBattleLog(AdditionalBattleAction("Monster Pre-Game Debuff "+string(debuff)), m, m1, 0)
+			}
 		}
 	}
 }
@@ -461,7 +473,7 @@ func (g *Game) DoSummonerPreRound(t *GameTeam) {
 		healTarget := t.GetTriageHealTarget()
 		if healTarget != nil {
 			healAmount := TriageHealMonster(healTarget)
-			g.CreateAndAddBattleLog(BATTLE_ACTION_TANK_HEAL, summoner, healTarget, healAmount)
+			g.CreateAndAddBattleLog(BATTLE_ACTION_TRIAGE, summoner, healTarget, healAmount)
 		}
 	}
 }
@@ -472,9 +484,6 @@ func (g *Game) GetNextMonsterTurn() *MonsterCard {
 	if len(allUnmovedMonsters) == 0 {
 		return nil
 	}
-	// PrintMonsterList("g.team1.GetUnmovedMonsters: ", g.team1.GetUnmovedMonsters())
-	// PrintMonsterList("g.team2.GetUnmovedMonsters: ", g.team2.GetUnmovedMonsters())
-	// PrintMonsterList("GetNextMonsterTurn - allUnmovedMonsters: ", allUnmovedMonsters)
 
 	// sort unmoved monsters
 	sort.SliceStable(allUnmovedMonsters, func(i, j int) bool {
@@ -845,6 +854,7 @@ func (g *Game) GetDamageMultiplier(attacker, target *MonsterCard) (int, []Abilit
 
 	// Deathblow x2
 	if attacker.HasAbility(ABILITY_DEATHBLOW) && target.IsLastMonster() {
+		fmt.Println("GetDamageMultiplier ", ABILITY_DEATHBLOW, ": ", attacker.GetName(), " -> ", target.GetName(), " isOnlyMonster:", target.isOnlyMonster)
 		multiplier *= 2
 		appliedAbilities = append(appliedAbilities, ABILITY_DEATHBLOW)
 	}

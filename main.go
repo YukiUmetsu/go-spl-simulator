@@ -14,7 +14,7 @@ func main() {
 	count := 0
 	for i := 0; i < len(logs); i++ {
 		l := logs[i]
-		if count > 0 {
+		if count > 100 {
 			break
 		}
 		if strings.Contains(l.Action.String(), "Round") {

@@ -39,7 +39,7 @@ type MonsterCard struct {
 
 func (c *MonsterCard) Setup(cardDetail CardDetail, cardLevel int) {
 	c.cardDetail = cardDetail
-	c.CardLevel = cardLevel - 1
+	c.CardLevel = cardLevel
 	var cardStatsByLevel CardStatsByLevel
 
 	// convert interface to ability
@@ -117,7 +117,7 @@ func (c *MonsterCard) SetStats(stats CardStatsByLevel) {
 }
 
 func (c *MonsterCard) GetStat(stats []int) int {
-	return stats[c.CardLevel]
+	return stats[c.CardLevel-1]
 }
 
 func (c *MonsterCard) AddAbilities(abilitiesArray [][]Ability) {
@@ -516,8 +516,8 @@ func (c *MonsterCard) GetPostAbilitySpeed() int {
 	if c.HasBuff(ABILITY_SWIFTNESS) {
 		speedModifier = speedModifier + c.GetBuffCount(ABILITY_SWIFTNESS)
 	}
-	if c.HasBuff(ABILITY_SLOW) {
-		speedModifier = speedModifier - c.GetBuffCount(ABILITY_SLOW)
+	if c.HasDebuff(ABILITY_SLOW) {
+		speedModifier = speedModifier - c.GetDebuffCount(ABILITY_SLOW)
 	}
 	return utils.GetBigger(speed+speedModifier, 1)
 }

@@ -59,7 +59,6 @@ func GetMonsterPreGameDebuffAbilities() []Ability {
 		ABILITY_HEADWINDS,
 		ABILITY_RUST,
 		ABILITY_SLOW,
-		ABILITY_SNARE,
 		ABILITY_SILENCE,
 		ABILITY_WEAKEN,
 	}
