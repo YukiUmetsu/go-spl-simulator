@@ -581,8 +581,10 @@ func (c *MonsterCard) RemoveBuffHealth(healthAmount int) {
 
 func (c *MonsterCard) RemoveDebuff(debuff Ability) {
 	debuffAmount := c.GetDebuffCount(debuff) - 1
-	if debuffAmount == 0 {
-		delete(c.DebuffMap, debuff)
+	if debuffAmount < 1 {
+		if _, ok := c.DebuffMap[debuff]; ok {
+			delete(c.DebuffMap, debuff)
+		}
 	} else {
 		c.DebuffMap[debuff] = debuffAmount
 	}
@@ -620,13 +622,19 @@ func (c *MonsterCard) CleanseDebuffs() {
 	}
 }
 
+func (c *MonsterCard) CleanseDebuffsAfterResurrect() {
+	for _, aDebuff := range GetActionDebuffs() {
+		c.RemoveDebuff(aDebuff)
+	}
+}
+
 func (c *MonsterCard) Resurrect() {
-	c.Health = 1
 	if c.hadDivineShield {
 		c.AddAbilitiesWithArray([]Ability{ABILITY_DIVINE_SHIELD})
 	}
 	c.Armor = c.GetPostAbilityMaxArmor()
-	c.CleanseDebuffs()
+	c.CleanseDebuffsAfterResurrect()
+	c.Health = 1
 }
 
 func (c *MonsterCard) IsEnraged() bool {

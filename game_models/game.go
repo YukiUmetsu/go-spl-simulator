@@ -336,7 +336,7 @@ func (g *Game) CheckAndSetGameWinner() {
 }
 
 func (g *Game) ProcessIfDead(m *MonsterCard) {
-	if m == nil || m.IsAlive() || !CardsArrIncludesMonster(g.deadMonsters, m) {
+	if m == nil || m.IsAlive() {
 		return
 	}
 
@@ -786,11 +786,9 @@ func (g *Game) AttackMonsterPhase(attacker, target *MonsterCard, attackType Card
 
 	// Pierce
 	if attacker.HasAbility(ABILITY_PIERCING) && battleDamage.Remainder > 0 {
-		if attackType == ATTACK_TYPE_MAGIC {
-			HitMonsterWithMagic(g, target, battleDamage.Remainder)
-		} else {
-			HitMonsterWithPhysical(g, target, battleDamage.Remainder)
-		}
+		// remainder already halved by shield or void. it just needs to hit health
+		remainderDamage := HitHealth(target, battleDamage.Remainder)
+		g.CreateAndAddBattleLog(BATTLE_ACTION_PIERCING_REMAINDER, attacker, target, remainderDamage)
 	}
 
 	// TODO: this doesn't account for the pierce
@@ -1228,8 +1226,8 @@ func (g *Game) GetEnemyTeamOfMonster(m *MonsterCard) *GameTeam {
 
 // Returns true if resurrected, false otherwise
 func (g *Game) ProcessIfResurrect(caster GameCardInterface, deadMonster *MonsterCard) bool {
-	if deadMonster.HasAbility(ABILITY_RESURRECT) && !deadMonster.IsAlive() {
-		deadMonster.RemoveAbility(ABILITY_RESURRECT)
+	if caster.HasAbility(ABILITY_RESURRECT) && !deadMonster.IsAlive() {
+		caster.RemoveAbility(ABILITY_RESURRECT)
 		deadMonster.Resurrect()
 
 		// remove it from the dead monsters list
@@ -1241,7 +1239,6 @@ func (g *Game) ProcessIfResurrect(caster GameCardInterface, deadMonster *Monster
 			deadMonsterList = append(deadMonsterList, m)
 		}
 		g.deadMonsters = deadMonsterList
-
 		g.CreateAndAddBattleLog(BATTLE_ACTION_RESURRECT, caster, deadMonster, 0)
 		return true
 	}

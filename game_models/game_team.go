@@ -193,7 +193,11 @@ func (t *GameTeam) GetTriageHealTarget() *MonsterCard {
 	largestHealthDiff := 0
 	var monsterToTriage *MonsterCard
 
-	for _, m := range t.GetAliveMonsters() {
+	for i, m := range t.GetAliveMonsters() {
+		if i == 0 {
+			// no triaging the first monster
+			continue
+		}
 		healthDiff := m.GetPostAbilityMaxHealth() - m.Health
 		if healthDiff > largestHealthDiff {
 			largestHealthDiff = healthDiff

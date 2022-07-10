@@ -73,6 +73,21 @@ func GetUncleansableDebuffs() []Ability {
 	}
 }
 
+/*
+ * Return debuffs that gets applied when attacker hits the target. This should be removed after resurrection.
+ */
+func GetActionDebuffs() []Ability {
+	return []Ability{
+		ABILITY_POISON,
+		ABILITY_AFFLICTION,
+		ABILITY_CRIPPLE,
+		ABILITY_HALVING,
+		ABILITY_SHATTER,
+		ABILITY_SNARE,
+		ABILITY_STUN,
+	}
+}
+
 /** Abilities that require a turn to do something */
 func GetActionAbilities() []Ability {
 	return []Ability{

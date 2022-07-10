@@ -11,16 +11,19 @@ func main() {
 	if err != nil {
 		log.Fatalln("final error: ", err)
 	}
-	count := 0
+	turnCount := 0
+	actionCount := 0
 	for i := 0; i < len(logs); i++ {
 		l := logs[i]
-		if count > 100 {
+		if turnCount > 100 {
 			break
 		}
 		if strings.Contains(l.Action.String(), "Round") {
-			count += 1
+			turnCount += 1
+			actionCount = 0
 			fmt.Printf("\n--------------------------------------\n")
 		}
-		fmt.Printf("\nAction: %v, Actor: %+v, Target: %+v, Value: %d\n", l.Action, l.Actor, l.Target, l.Value)
+		actionCount += 1
+		fmt.Printf("\n%v Action: %v, Actor: %+v, Target: %+v, Value: %d\n", actionCount, l.Action, l.Actor, l.Target, l.Value)
 	}
 }

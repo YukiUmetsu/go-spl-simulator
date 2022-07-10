@@ -132,16 +132,17 @@ const (
 type AdditionalBattleAction string
 
 const (
-	BATTLE_ACTION_DEATH         AdditionalBattleAction = "Death"
-	BATTLE_ACTION_EARTHQUAKE    AdditionalBattleAction = "Earthquake"
-	BATTLE_ACTION_FATIGUE       AdditionalBattleAction = "Fatigue"
-	BATTLE_ACTION_MELEE         AdditionalBattleAction = "Melee attack"
-	BATTLE_ACTION_RANGED        AdditionalBattleAction = "Ranged attack"
-	BATTLE_ACTION_MAGIC         AdditionalBattleAction = "Magic attack"
-	BATTLE_ACTION_ROUND_START   AdditionalBattleAction = "Round start"
-	BATTLE_ACTION_ATTACK        AdditionalBattleAction = "Attack"
-	BATTLE_ACTION_ATTACK_DODGED AdditionalBattleAction = "Dodged"
-	BATTLE_ACTION_GAME_OVER     AdditionalBattleAction = "Game Over"
+	BATTLE_ACTION_DEATH              AdditionalBattleAction = "Death"
+	BATTLE_ACTION_EARTHQUAKE         AdditionalBattleAction = "Earthquake"
+	BATTLE_ACTION_FATIGUE            AdditionalBattleAction = "Fatigue"
+	BATTLE_ACTION_MELEE              AdditionalBattleAction = "Melee attack"
+	BATTLE_ACTION_RANGED             AdditionalBattleAction = "Ranged attack"
+	BATTLE_ACTION_MAGIC              AdditionalBattleAction = "Magic attack"
+	BATTLE_ACTION_ROUND_START        AdditionalBattleAction = "Round start"
+	BATTLE_ACTION_ATTACK             AdditionalBattleAction = "Attack"
+	BATTLE_ACTION_PIERCING_REMAINDER AdditionalBattleAction = "Piercing remainder attack"
+	BATTLE_ACTION_ATTACK_DODGED      AdditionalBattleAction = "Dodged"
+	BATTLE_ACTION_GAME_OVER          AdditionalBattleAction = "Game Over"
 
 	// abilities
 	BATTLE_ACTION_AFFLICTION           AdditionalBattleAction = "Affliction"
@@ -225,39 +226,39 @@ const (
 
 const (
 	// Abilities multiplier
-	EARTHQUAKE_DAMAGE      = 2
-	RUST_AMOUNT            = 2
-	REDEMPTION_DAMAGE      = 1
-	BACKFIRE_DAMAGE        = 2
-	THORNS_DAMAGE          = 2
-	PROTECT_AMOUNT         = 2
-	CRIPPLE_AMOUNT         = 1
-	WEAKEN_AMOUNT          = 1
-	STRENGTHEN_AMOUNT      = 1
-	LIFE_LEECH_AMOUNT      = 1
-	SCAVENGER_AMOUNT       = 1
-	REPAIR_AMOUNT          = 2
-	TANK_HEAL_MULTIPLIER   = 1 / 3
-	TRIAGE_HEAL_MULTIPLIER = 1 / 3
-	MINIMUM_TRIAGE_HEAL    = 2
-	MINIMUM_SELF_HEAL      = 2
-	BLAST_MULTIPLIER       = 1 / 2
-	FORCEFIELD_MIN_DAMAGE  = 5
-	POISON_DAMAGE          = 2
+	EARTHQUAKE_DAMAGE      int     = 2
+	RUST_AMOUNT            int     = 2
+	REDEMPTION_DAMAGE      int     = 1
+	BACKFIRE_DAMAGE        int     = 2
+	THORNS_DAMAGE          int     = 2
+	PROTECT_AMOUNT         int     = 2
+	CRIPPLE_AMOUNT         int     = 1
+	WEAKEN_AMOUNT          int     = 1
+	STRENGTHEN_AMOUNT      int     = 1
+	LIFE_LEECH_AMOUNT      int     = 1
+	SCAVENGER_AMOUNT       int     = 1
+	REPAIR_AMOUNT          int     = 2
+	TANK_HEAL_MULTIPLIER   float64 = 0.333333333
+	TRIAGE_HEAL_MULTIPLIER float64 = 0.333333333
+	MINIMUM_TRIAGE_HEAL    int     = 2
+	MINIMUM_SELF_HEAL      int     = 2
+	BLAST_MULTIPLIER       float64 = 0.5
+	FORCEFIELD_MIN_DAMAGE  int     = 5
+	POISON_DAMAGE          int     = 2
 
 	// Ability hit chance
-	AFFLICTION_CHANCE       = 1 / 2
-	RETALIATE_CHANCE        = 1 / 2
-	STUN_CHANCE             = 1 / 2
-	POISON_CHANCE           = 1 / 2
-	DODGE_CHANCE            = 0.25
-	FLYING_DODGE_CHANCE     = 0.25
-	BLIND_DODGE_CHANCE      = 0.15
-	SPEED_DIFF_DODGE_CHANCE = 1 / 10
+	AFFLICTION_CHANCE       float64 = 0.5
+	RETALIATE_CHANCE        float64 = 0.5
+	STUN_CHANCE             float64 = 0.5
+	POISON_CHANCE           float64 = 0.5
+	DODGE_CHANCE            float64 = 0.25
+	FLYING_DODGE_CHANCE     float64 = 0.25
+	BLIND_DODGE_CHANCE      float64 = 0.15
+	SPEED_DIFF_DODGE_CHANCE float64 = 0.1
 
 	// Multiplier
-	LAST_STAND_MULTIPLIER = 1.5
-	ENRAGE_MULTIPLIER     = 1.5
+	LAST_STAND_MULTIPLIER float64 = 1.5
+	ENRAGE_MULTIPLIER     float64 = 1.5
 )
 
 const (
