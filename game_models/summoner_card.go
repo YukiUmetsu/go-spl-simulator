@@ -128,5 +128,5 @@ func (c *SummonerCard) AddAbilitiesWithArray(abilities []Ability) {
 }
 
 func (c *SummonerCard) String() string {
-	return fmt.Sprintf("ID: %v, Name: %s, Lvl: %v, Team: %v, Abilities: %v", c.cardDetail.ID, c.cardDetail.Name, c.CardLevel, c.GetTeamNumber(), c.Abilities)
+	return fmt.Sprintf(" S[ Name:%s(%v), Lvl: %v, Team: %v, Abilities: %v ]", c.cardDetail.Name, c.cardDetail.ID, c.CardLevel, c.GetTeamNumber(), c.Abilities)
 }

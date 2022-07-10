@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"time"
 )
 
 func GetDidDodge(rulesets []Ruleset, attacker *MonsterCard, target *MonsterCard, attackType CardAttackType) bool {
@@ -98,12 +99,12 @@ func ResolveFriendlyTies(m1 *MonsterCard, m2 *MonsterCard) int {
 		}
 		return 1
 	}
-
 	return RandomTieBreaker()
 }
 
 func RandomTieBreaker() int {
-	if rand.Intn(101) > 50 {
+	rand.Seed(time.Now().UnixNano())
+	if rand.Intn(100)+1 > 50 {
 		return -1
 	}
 	return 1

@@ -54,13 +54,13 @@ func (g *Game) PlayGame() {
 	g.DoSummonerPreGameBuff(team1Summoner, team1Monsters)
 	g.DoSummonerPreGameBuff(team2Summoner, team2Monsters)
 
-	// Monsters pre-game buffs
-	g.DoMonsterPreGameBuff(team1Monsters)
-	g.DoMonsterPreGameBuff(team2Monsters)
-
 	// Summoner pre-game debuffs
 	g.DoSummonerPreGameDebuff(team1Summoner, team2Monsters)
 	g.DoSummonerPreGameDebuff(team2Summoner, team1Monsters)
+
+	// Monsters pre-game buffs
+	g.DoMonsterPreGameBuff(team1Monsters)
+	g.DoMonsterPreGameBuff(team2Monsters)
 
 	// Monsters pre-game debuffs
 	g.DoMonsterPreGameDebuff(team1Monsters, team2Monsters)
@@ -125,20 +125,13 @@ func (g *Game) DoSummonerPreGameBuff(summoner *SummonerCard, friendlyMonsters []
 // Add all summoner abilities to all enemy monsters which are in SUMMONER_DEBUFF_ABILITIES
 func (g *Game) DoSummonerPreGameDebuff(summoner *SummonerCard, targetMonsters []*MonsterCard) {
 	// add summoner debuffs (aka, affliciton, blind)
-	for _, ability := range GetSummonerPreGameDebuffAbilities() {
-		if summoner.HasAbility(ability) {
-			g.ApplyDebuffToMonsters(targetMonsters, ability)
+	for _, debuff := range GetSummonerPreGameDebuffAbilities() {
+		if summoner.HasAbility(debuff) {
+			g.ApplyDebuffToMonsters(targetMonsters, debuff)
 		}
 	}
 
-	// add summoner abilities
-	for _, ability := range GetSummonerAbilityAbilities() {
-		if summoner.HasAbility(ability) {
-			g.ApplyAbilityToMonsters(targetMonsters, ability)
-		}
-	}
-
-	// add summoner stats (e.g. +1 melee, +1 archery, +1 magic etc...)
+	// add summoner stats (e.g. -1 melee, -1 archery, -1 magic etc...)
 	for _, m := range targetMonsters {
 		if summoner.Armor < 0 {
 			m.AddSummonerArmor(summoner.Armor)
