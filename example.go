@@ -36,7 +36,7 @@ func SimulateBattle(battleId string, shouldLog bool) ([]BattleLog, error) {
 	return game.GetBattleLogs()
 }
 
-func GetWinrateOfBattle(battleId string, playerNum int) float64 {
+func GetWinrateOfBattle(battleId string, playerNum int) (float64, string) {
 	winCount := 0
 	cardDetailMap := GetAllCardDetail()
 	historicBattle := GetHistoricBattle(battleId)
@@ -61,7 +61,14 @@ func GetWinrateOfBattle(battleId string, playerNum int) float64 {
 			winCount += 1
 		}
 	}
-	return math.Round(float64(winCount) * 100 / 100)
+
+	playerName := ""
+	if playerNum == 1 {
+		playerName = battleDetails.Team1.Player
+	} else {
+		playerName = battleDetails.Team2.Player
+	}
+	return math.Round(float64(winCount) * 100 / 100), playerName
 }
 
 func GetAllCardDetail() CardDetailMap {

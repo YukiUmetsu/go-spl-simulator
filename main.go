@@ -7,24 +7,34 @@ import (
 )
 
 func main() {
-	logs, err := SimulateBattle("sl_001312439e6630c7755cb58151db8eed", true)
+	simulateMainBattle("sl_a8ef25931d7530296c6327921c8c0dc2", true, 2)
+}
 
-	if err != nil {
-		log.Fatalln("final error: ", err)
-	}
-	turnCount := 0
-	actionCount := 0
-	for i := 0; i < len(logs); i++ {
-		l := logs[i]
-		if turnCount > 100 {
-			break
+func simulateMainBattle(battleId string, isforWinrate bool, playerNum int) {
+	if !isforWinrate {
+		logs, err := SimulateBattle(battleId, true)
+
+		if err != nil {
+			log.Fatalln("final error: ", err)
 		}
-		if strings.Contains(l.Action.String(), "Round") {
-			turnCount += 1
-			actionCount = 0
-			fmt.Printf("\n--------------------------------------\n")
+		turnCount := 0
+		actionCount := 0
+		for i := 0; i < len(logs); i++ {
+			l := logs[i]
+			if turnCount > 100 {
+				break
+			}
+			if strings.Contains(l.Action.String(), "Round") {
+				turnCount += 1
+				actionCount = 0
+				fmt.Printf("\n--------------------------------------\n")
+			}
+			actionCount += 1
+			fmt.Printf("\n%v Action: %v, Actor: %+v, Target: %+v, Value: %d\n", actionCount, l.Action, l.Actor, l.Target, l.Value)
 		}
-		actionCount += 1
-		fmt.Printf("\n%v Action: %v, Actor: %+v, Target: %+v, Value: %d\n", actionCount, l.Action, l.Actor, l.Target, l.Value)
+		return
 	}
+
+	winRate, playerName := GetWinrateOfBattle(battleId, playerNum)
+	fmt.Printf("player: %s, winrate: %f\n", playerName, winRate)
 }
