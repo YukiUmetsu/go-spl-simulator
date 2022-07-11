@@ -39,6 +39,7 @@ func (g *Game) Reset() {
 	g.team1.ResetTeam()
 	g.team2.ResetTeam()
 	g.stunData = make(map[string][]*MonsterCard, 0)
+	g.battleLogs = []BattleLog{}
 }
 
 func (g *Game) GetWinner() TeamNumber {
