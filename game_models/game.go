@@ -85,11 +85,11 @@ func (g *Game) DoSummonerPreGameBuff(summoner *SummonerCard, friendlyMonsters []
 	// add summoner abilities
 	for _, ability := range GetSummonerAbilityAbilities() {
 		if summoner.HasAbility(ability) {
+			g.ApplyAbilityToMonsters(friendlyMonsters, ability)
 			logAction := "Summoner Pre Game Ability Buff " + string(ability)
 			for _, m := range friendlyMonsters {
 				g.CreateAndAddBattleLog(AdditionalBattleAction(logAction), summoner, m, 0)
 			}
-			g.ApplyAbilityToMonsters(friendlyMonsters, ability)
 		}
 	}
 

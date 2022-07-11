@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math"
 	"net/http"
 	"strings"
 
@@ -15,9 +16,9 @@ const GET_ALL_CARDS_ENDPOIONT = "cards/get_details"
 const BATTLE_HISTORY_ENDPOINT = "battle/result?id="
 
 /*  Creates the game using the card id. Returns the battle logs. */
-func ExampleHistoricBattle() ([]BattleLog, error) {
+func SimulateBattle(battleId string, shouldLog bool) ([]BattleLog, error) {
 	cardDetailMap := GetAllCardDetail()
-	historicBattle := GetHistoricBattle("sl_04e5faecf4e5996350fa97e1b94c9658")
+	historicBattle := GetHistoricBattle(battleId)
 
 	var battleDetails BattleDetails
 	err := json.Unmarshal([]byte(historicBattle.Details), &battleDetails)
@@ -30,9 +31,37 @@ func ExampleHistoricBattle() ([]BattleLog, error) {
 	for _, rulesetStr := range rulesetStrArr {
 		rulesets = append(rulesets, Ruleset(rulesetStr))
 	}
-	game := CreateGame(cardDetailMap, battleDetails, rulesets)
+	game := CreateGame(cardDetailMap, battleDetails, rulesets, shouldLog)
 	game.PlayGame()
 	return game.GetBattleLogs()
+}
+
+func GetWinrateOfBattle(battleId string, playerNum int) float64 {
+	winCount := 0
+	cardDetailMap := GetAllCardDetail()
+	historicBattle := GetHistoricBattle(battleId)
+
+	var battleDetails BattleDetails
+	err := json.Unmarshal([]byte(historicBattle.Details), &battleDetails)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	rulesetStrArr := strings.Split(historicBattle.Ruleset, "|")
+	rulesets := make([]Ruleset, 0)
+	for _, rulesetStr := range rulesetStrArr {
+		rulesets = append(rulesets, Ruleset(rulesetStr))
+	}
+
+	for i := 0; i < 100; i++ {
+		game := CreateGame(cardDetailMap, battleDetails, rulesets, false)
+		game.PlayGame()
+		winner := game.GetWinner()
+		if int(winner) == playerNum {
+			winCount += 1
+		}
+	}
+	return math.Round(float64(winCount) * 100 / 100)
 }
 
 func GetAllCardDetail() CardDetailMap {
@@ -88,11 +117,11 @@ func CreateGameTeam(cardDetailMap CardDetailMap, battleTeam BattleTeam) *GameTea
 	return &team
 }
 
-func CreateGame(cardDetailMap CardDetailMap, battleDetails BattleDetails, rulesets []Ruleset) Game {
+func CreateGame(cardDetailMap CardDetailMap, battleDetails BattleDetails, rulesets []Ruleset, shouldLog bool) Game {
 	gameTeam1 := CreateGameTeam(cardDetailMap, battleDetails.Team1)
 	gameTeam2 := CreateGameTeam(cardDetailMap, battleDetails.Team2)
 	var game Game
-	game.Create(gameTeam1, gameTeam2, rulesets, true)
+	game.Create(gameTeam1, gameTeam2, rulesets, shouldLog)
 	return game
 }
 

@@ -7,7 +7,8 @@ import (
 )
 
 func main() {
-	logs, err := ExampleHistoricBattle()
+	logs, err := SimulateBattle("sl_001312439e6630c7755cb58151db8eed", true)
+
 	if err != nil {
 		log.Fatalln("final error: ", err)
 	}

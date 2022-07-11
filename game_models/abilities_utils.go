@@ -35,6 +35,7 @@ func GetSummonerPreGameBuffAbilities() []Ability {
 /** Abilities that summoner applies to enemy team at the start of the game */
 func GetSummonerPreGameDebuffAbilities() []Ability {
 	return []Ability{
+		ABILITY_AMPLIFY,
 		ABILITY_AFFLICTION,
 		ABILITY_BLIND,
 	}
