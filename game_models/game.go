@@ -2,6 +2,7 @@ package game_models
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"sort"
 
@@ -18,6 +19,7 @@ type Game struct {
 	winner       TeamNumber
 	deadMonsters []*MonsterCard
 	roundNumber  int
+	stunData     map[string][]*MonsterCard // key: "[team number]-[monster name]" e.g. "1-Magnor"
 }
 
 func (g *Game) Create(team1, team2 *GameTeam, rulesets []Ruleset, shouldLog bool) {
@@ -27,6 +29,7 @@ func (g *Game) Create(team1, team2 *GameTeam, rulesets []Ruleset, shouldLog bool
 	g.shouldLog = shouldLog
 	g.team1.SetTeamNumber(TEAM_NUM_ONE)
 	g.team2.SetTeamNumber(TEAM_NUM_TWO)
+	g.stunData = make(map[string][]*MonsterCard, 0)
 }
 
 func (g *Game) Reset() {
@@ -35,10 +38,30 @@ func (g *Game) Reset() {
 	g.deadMonsters = make([]*MonsterCard, 0)
 	g.team1.ResetTeam()
 	g.team2.ResetTeam()
+	g.stunData = make(map[string][]*MonsterCard, 0)
 }
 
 func (g *Game) GetWinner() TeamNumber {
 	return g.winner
+}
+
+func (g *Game) RemoveStunsThatThisMonsterApplied(m *MonsterCard) {
+	stunDataKey := g.GetStunDataKey(g.roundNumber, m)
+	if _, ok := g.stunData[stunDataKey]; ok {
+		// the monster stunned a monster previously
+		hadStunMonsters := g.stunData[stunDataKey]
+		if hadStunMonsters != nil && len(hadStunMonsters) > 0 {
+			for _, stunnedMonster := range hadStunMonsters {
+				stunnedMonster.RemoveAllDebuff(ABILITY_STUN)
+				delete(g.stunData, stunDataKey)
+				g.CreateAndAddBattleLog(BATTLE_ACTION_STUN_REMOVED, m, stunnedMonster, 0)
+			}
+		}
+	}
+}
+
+func (g *Game) GetStunDataKey(roundNumber int, stunApplier GameCardInterface) string {
+	return fmt.Sprintf("%d-%v", roundNumber, stunApplier.GetName())
 }
 
 func (g *Game) GetBattleLogs() ([]BattleLog, error) {
@@ -49,7 +72,7 @@ func (g *Game) GetBattleLogs() ([]BattleLog, error) {
 }
 
 func (g *Game) PlayGame() {
-	g.roundNumber = 0
+	g.Reset()
 	team1Summoner := g.team1.GetSummoner()
 	team1Monsters := g.team1.GetMonstersList()
 	team2Summoner := g.team2.GetSummoner()
@@ -348,6 +371,9 @@ func (g *Game) ProcessIfDead(m *MonsterCard) {
 		return
 	}
 
+	// TODO: [ProcessIfDead] this is not right. even if stun applier dies, stun won't go away
+	g.RemoveStunsThatThisMonsterApplied(m)
+
 	// monster is dead
 	g.CreateAndAddBattleLog(BATTLE_ACTION_DEATH, m, nil, 0)
 	g.deadMonsters = append(g.deadMonsters, m)
@@ -427,16 +453,17 @@ func (g *Game) PlaySingleRound() {
 	g.DoSummonerPreRound(g.team2)
 
 	// loop through each monster's turn
-	stunnedMonsters := []MonsterCard{}
 	currentMonster := g.GetNextMonsterTurn()
 	for currentMonster != nil {
 		if !currentMonster.IsAlive() {
 			continue
 		}
 
+		// remove stun state
+		g.RemoveStunsThatThisMonsterApplied(currentMonster)
+
 		// check stun
 		if currentMonster.HasDebuff(ABILITY_STUN) {
-			stunnedMonsters = append(stunnedMonsters, *currentMonster)
 			currentMonster.SetHasTurnPassed(true)
 			currentMonster = g.GetNextMonsterTurn()
 			continue
@@ -450,11 +477,6 @@ func (g *Game) PlaySingleRound() {
 		}
 
 		currentMonster = g.GetNextMonsterTurn()
-	}
-
-	// remove stun state
-	for _, sm := range stunnedMonsters {
-		sm.RemoveAllDebuff(ABILITY_STUN)
 	}
 }
 
@@ -1070,6 +1092,13 @@ func (g *Game) MaybeApplyRetaliate(attacker *MonsterCard, target *MonsterCard, a
 
 func (g *Game) MaybeApplyStun(attacker, target *MonsterCard) {
 	if attacker.HasAbility(ABILITY_STUN) && GetSuccessBelow(STUN_CHANCE*100) {
+		stunDataKey := g.GetStunDataKey(g.roundNumber, attacker)
+		prevStunnedMonsters := g.stunData[stunDataKey]
+		if prevStunnedMonsters == nil {
+			prevStunnedMonsters = []*MonsterCard{}
+		}
+		prevStunnedMonsters = append(prevStunnedMonsters, target)
+		g.stunData[stunDataKey] = prevStunnedMonsters
 		g.AddMonsterDebuffToAMonster(attacker, target, ABILITY_STUN, BATTLE_ACTION_STUN)
 	}
 }

@@ -163,6 +163,7 @@ const (
 	BATTLE_ACTION_RETALIATE            AdditionalBattleAction = "Retaliate"
 	BATTLE_ACTION_RETURN_FIRE          AdditionalBattleAction = "Return fire"
 	BATTLE_ACTION_STUN                 AdditionalBattleAction = "Stun"
+	BATTLE_ACTION_STUN_REMOVED         AdditionalBattleAction = "Stun Removed"
 	BATTLE_ACTION_SCAVENGER            AdditionalBattleAction = "Scavenger"
 	BATTLE_ACTION_SNARE                AdditionalBattleAction = "Snare"
 	BATTLE_ACTION_TANK_HEAL            AdditionalBattleAction = "Tank heal"
