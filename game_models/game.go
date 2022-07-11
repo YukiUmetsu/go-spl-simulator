@@ -29,6 +29,14 @@ func (g *Game) Create(team1, team2 *GameTeam, rulesets []Ruleset, shouldLog bool
 	g.team2.SetTeamNumber(TEAM_NUM_TWO)
 }
 
+func (g *Game) Reset() {
+	g.roundNumber = 0
+	g.winner = TEAM_NUM_UNKNOWN
+	g.deadMonsters = make([]*MonsterCard, 0)
+	g.team1.ResetTeam()
+	g.team2.ResetTeam()
+}
+
 func (g *Game) GetWinner() TeamNumber {
 	return g.winner
 }

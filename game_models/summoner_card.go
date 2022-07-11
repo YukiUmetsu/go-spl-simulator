@@ -16,7 +16,7 @@ func (c *SummonerCard) Setup(cardDetail CardDetail, cardLevel int) {
 	c.CardLevel = cardLevel - 1
 	var summonerStats FlatCardStats
 
-	abilities := make([]Ability, 0)
+	var abilities []Ability = make([]Ability, 0)
 	for _, a := range cardDetail.Stats.Abilities {
 		if len(a.(string)) < 1 {
 			continue
@@ -129,4 +129,15 @@ func (c *SummonerCard) AddAbilitiesWithArray(abilities []Ability) {
 
 func (c *SummonerCard) String() string {
 	return fmt.Sprintf(" S[ Name:%s(%v), Lvl: %v, Team: %v, Abilities: %v ]", c.cardDetail.Name, c.cardDetail.ID, c.CardLevel, c.GetTeamNumber(), c.Abilities)
+}
+
+/* Returns the card level (0 indexed) */
+func (c *SummonerCard) GetCardLevel() int {
+	return c.CardLevel
+}
+
+func (c *SummonerCard) GetCleanCard() *SummonerCard {
+	var summoner *SummonerCard = &SummonerCard{}
+	summoner.Setup(c.cardDetail, c.GetCardLevel()+1)
+	return summoner
 }

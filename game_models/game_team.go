@@ -1,6 +1,7 @@
 package game_models
 
 import (
+	"log"
 	"math/rand"
 	"time"
 )
@@ -9,6 +10,7 @@ type GameTeam struct {
 	summoner    *SummonerCard
 	monsterList []*MonsterCard
 	playerName  string
+	teamNumber  TeamNumber
 }
 
 func (t *GameTeam) Create(summoner *SummonerCard, monsterList []*MonsterCard, playerName string) {
@@ -19,6 +21,21 @@ func (t *GameTeam) Create(summoner *SummonerCard, monsterList []*MonsterCard, pl
 		t.monsterList[0].SetIsOnlyMonster()
 	}
 	t.SetMonsterPositions()
+}
+
+func (t *GameTeam) ResetTeam() {
+	t.summoner = t.summoner.GetCleanCard()
+	newMonsterList := make([]*MonsterCard, 0)
+	for _, m := range t.monsterList {
+		newMonsterList = append(newMonsterList, m.GetCleanCard())
+	}
+	t.SetMonsterPositions()
+	if t.teamNumber != TEAM_NUM_UNKNOWN {
+		// set team numbers for summoner and monsters
+		t.SetTeamNumber(t.teamNumber)
+	} else {
+		log.Fatal("Team must have a team number set")
+	}
 }
 
 func (t *GameTeam) GetPlayerName() string {
@@ -32,6 +49,7 @@ func (t *GameTeam) SetMonsterPositions() {
 }
 
 func (t *GameTeam) SetTeamNumber(teamNumber TeamNumber) {
+	t.teamNumber = teamNumber
 	t.summoner.SetTeam(teamNumber)
 	for _, monster := range t.monsterList {
 		monster.SetTeam(teamNumber)
