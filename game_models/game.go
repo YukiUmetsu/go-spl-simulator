@@ -1113,14 +1113,12 @@ func (g *Game) MaybeApplyPoison(attacker, target *MonsterCard) {
 func (g *Game) MaybeApplyCripple(attacker, target *MonsterCard) {
 	if attacker.HasAbility(ABILITY_STUN) && target.IsAlive() {
 		g.AddMonsterDebuffToAMonster(attacker, target, ABILITY_CRIPPLE, BATTLE_ACTION_CRIPPLE)
-		g.CreateAndAddBattleLog(BATTLE_ACTION_CRIPPLE, attacker, target, 1)
 	}
 }
 
 func (g *Game) MaybeApplyHalving(attacker, target *MonsterCard) {
 	if attacker.HasAbility(ABILITY_HALVING) && target.IsAlive() {
 		g.AddMonsterDebuffToAMonster(attacker, target, ABILITY_HALVING, BATTLE_ACTION_HALVING)
-		g.CreateAndAddBattleLog(BATTLE_ACTION_CRIPPLE, attacker, target, 0)
 	}
 }
 

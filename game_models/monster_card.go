@@ -103,14 +103,13 @@ func (c *MonsterCard) SetTeam(teamNumber TeamNumber) {
 	c.Team = teamNumber
 }
 
-/* Returns the card level (0 indexed) */
 func (c *MonsterCard) GetCardLevel() int {
 	return c.CardLevel
 }
 
 func (c *MonsterCard) GetCleanCard() *MonsterCard {
 	var monster *MonsterCard = &MonsterCard{}
-	monster.Setup(c.cardDetail, c.GetCardLevel()+1)
+	monster.Setup(c.cardDetail, c.GetCardLevel())
 	return monster
 }
 
