@@ -1111,7 +1111,7 @@ func (g *Game) MaybeApplyPoison(attacker, target *MonsterCard) {
 }
 
 func (g *Game) MaybeApplyCripple(attacker, target *MonsterCard) {
-	if attacker.HasAbility(ABILITY_STUN) && target.IsAlive() {
+	if attacker.HasAbility(ABILITY_CRIPPLE) && target.IsAlive() {
 		g.AddMonsterDebuffToAMonster(attacker, target, ABILITY_CRIPPLE, BATTLE_ACTION_CRIPPLE)
 	}
 }
