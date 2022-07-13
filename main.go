@@ -1,4 +1,4 @@
-package main
+package simulator
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	simulateMainBattle("sl_a8ef25931d7530296c6327921c8c0dc2", true, 2)
+	simulateMainBattle("sl_b0a5f35aa314b8d793b669a38f769964", false, 2)
 }
 
 func simulateMainBattle(battleId string, isforWinrate bool, playerNum int) {
