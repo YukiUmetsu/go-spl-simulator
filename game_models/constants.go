@@ -28,7 +28,7 @@ const (
 	ABILITY_BLAST                     = "Blast"
 	ABILITY_BLIND                     = "Blind"
 	ABILITY_BLOODLUST                 = "Bloodlust"
-	ABILITY_CAMOUFLAGE                = "camouflage"
+	ABILITY_CAMOUFLAGE                = "Camouflage"
 	ABILITY_CLEANSE                   = "Cleanse"
 	ABILITY_CLOSE_RANGE               = "Close Range"
 	ABILITY_CRIPPLE                   = "Cripple"
