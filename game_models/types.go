@@ -59,6 +59,7 @@ type CardRawStats struct {
 }
 
 type CardDetailMap map[int]CardDetail
+type CardDetailMapPerName map[string]CardDetail
 
 type Team struct {
 	Summoner CardDetail

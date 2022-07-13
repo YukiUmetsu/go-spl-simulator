@@ -91,6 +91,26 @@ func GetAllCardDetail() CardDetailMap {
 	return cardDetailMap
 }
 
+func GetAllCardDetailPerCardName() CardDetailMapPerName {
+	resp, err := http.Get(SPL_API_URL + GET_ALL_CARDS_ENDPOIONT)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer resp.Body.Close()
+
+	var cardDetails []CardDetail
+	err = json.NewDecoder(resp.Body).Decode(&cardDetails)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	cardDetailMap := make(CardDetailMapPerName)
+	for _, cd := range cardDetails {
+		cardDetailMap[cd.Name] = cd
+	}
+	return cardDetailMap
+}
+
 func GetHistoricBattle(battleID string) BattleHistory {
 	resp, err := http.Get(SPL_API_URL + BATTLE_HISTORY_ENDPOINT + battleID)
 	if err != nil {
