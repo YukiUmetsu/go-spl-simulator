@@ -810,6 +810,7 @@ func (g *Game) AttackMonsterPhase(attacker, target *MonsterCard, attackType Card
 	// Divine shield
 	if target.HasAbility(ABILITY_DIVINE_SHIELD) {
 		g.HandleDivineShield(attacker, target, attackType, baseDamage, prevMonster, nextMonster, damageAmount)
+		return
 	}
 
 	battleDamage := g.ActuallyHitMonster(attacker, target, attackType)
@@ -928,7 +929,7 @@ func (g *Game) HandleDivineShield(
 	damageAmount int,
 ) {
 	target.RemoveDivineShield()
-	g.CreateAndAddBattleLog(BATTLE_ACTION_DIVINE_SHIELD, attacker, target, 0)
+	g.CreateAndAddBattleLog(BATTLE_ACTION_REMOVE_DIVINE_SHIELD, attacker, target, 0)
 
 	// Handle Reflective Damage
 	if attackType == ATTACK_TYPE_MAGIC {
@@ -941,6 +942,11 @@ func (g *Game) HandleDivineShield(
 		g.MaybeApplyRetaliate(attacker, target, attackType)
 	}
 
+	// Shatter
+	if attacker.HasAbility(ABILITY_SHATTER) {
+		target.Armor = 0
+	}
+
 	// check if dead
 	g.ProcessIfDead(attacker)
 	g.ProcessIfDead(target)
@@ -950,6 +956,19 @@ func (g *Game) HandleDivineShield(
 	g.MaybeApplyPoison(attacker, target)
 	g.MaybeApplyCripple(attacker, target)
 	g.MaybeApplyHalving(attacker, target)
+
+	// Debuffs
+	// Affliction
+	if attacker.HasAbility(ABILITY_AFFLICTION) && !target.HasDebuff(ABILITY_AFFLICTION) && GetSuccessBelow(AFFLICTION_CHANCE*100) {
+		g.CreateAndAddBattleLog(BATTLE_ACTION_AFFLICTION, attacker, target, 0)
+		g.AddMonsterDebuffToAMonster(attacker, target, ABILITY_AFFLICTION, BATTLE_ACTION_AFFLICTION)
+	}
+
+	// Dispel
+	if attacker.HasAbility(ABILITY_DISPEL) {
+		DispelBuffs(target)
+	}
+
 	g.MaybeApplyBlast(attacker, prevMonster, attackType, damageAmount)
 	g.MaybeApplyBlast(attacker, nextMonster, attackType, damageAmount)
 }
