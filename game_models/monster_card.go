@@ -725,5 +725,20 @@ func (c *MonsterCard) RemoveAllBuff(buff Ability) {
 }
 
 func (c *MonsterCard) String() string {
-	return fmt.Sprintf("M[ Name: %s(%v), Lvl:%v, Team:%v, HP:%v, Speed:%v, Armor:%v, buffs:%+v, debuffs:%+v, abilities:%+v ] ", c.cardDetail.Name, c.cardDetail.ID, c.CardLevel, c.GetTeamNumber(), c.Health, c.Speed, c.Armor, c.BuffMap, c.DebuffMap, c.Abilities)
+	return fmt.Sprintf(
+		"M[ Name: %s(%v), Lvl:%v, Team:%v, HP:%v, Speed:%v, Armor:%v, buffs:%+v, debuffs:%+v, abilities:%+v, (ML:%v, RG:%v, MG:%v) ] ",
+		c.cardDetail.Name,
+		c.cardDetail.ID,
+		c.CardLevel,
+		c.GetTeamNumber(),
+		c.Health,
+		c.GetPostAbilitySpeed(),
+		c.Armor,
+		c.BuffMap,
+		c.DebuffMap,
+		c.Abilities,
+		c.GetPostAbilityMelee(),
+		c.GetPostAbilityRange(),
+		c.GetPostAbilityMagic(),
+	)
 }
