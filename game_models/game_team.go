@@ -17,10 +17,6 @@ func (t *GameTeam) Create(summoner *SummonerCard, monsterList []*MonsterCard, pl
 	t.summoner = summoner
 	t.monsterList = monsterList
 	t.playerName = playerName
-	if len(t.monsterList) == 1 {
-		t.monsterList[0].SetIsOnlyMonster()
-	}
-	t.SetMonsterPositions()
 }
 
 func (t *GameTeam) ResetTeam() {
@@ -30,6 +26,11 @@ func (t *GameTeam) ResetTeam() {
 		newMonsterList = append(newMonsterList, m.GetCleanCard())
 	}
 	t.SetMonsterPositions()
+
+	if len(t.monsterList) == 1 {
+		t.monsterList[0].SetIsOnlyMonster()
+	}
+
 	if t.teamNumber != TEAM_NUM_UNKNOWN {
 		// set team numbers for summoner and monsters
 		t.SetTeamNumber(t.teamNumber)
