@@ -111,6 +111,7 @@ const (
 	ATTACK_TYPE_MELEE CardAttackType = iota
 	ATTACK_TYPE_RANGED
 	ATTACK_TYPE_MAGIC
+	ATTACK_TYPE_NO_ATTACK
 )
 
 type FoilType int
