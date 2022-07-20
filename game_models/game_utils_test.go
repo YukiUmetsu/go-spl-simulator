@@ -180,3 +180,88 @@ func TestGetDodgeChance(t *testing.T) {
 		}
 	}
 }
+
+func TestNormalCompareAttackOrder(t *testing.T) {
+	mSpeed2 := GetDefaultFakeMonster(ATTACK_TYPE_MELEE)
+	mSpeed2.Speed = 2
+	mSpeed1 := GetDefaultFakeMonster(ATTACK_TYPE_MELEE)
+	mSpeed1.Speed = 1
+
+	magicM := GetDefaultFakeMonster(ATTACK_TYPE_MAGIC)
+	meleeM := GetDefaultFakeMonster(ATTACK_TYPE_MELEE)
+	rangedM := GetDefaultFakeMonster(ATTACK_TYPE_RANGED)
+
+	legendaryLvl1 := CreateMonsterOfRarityAndLevel(4, 1, MONSTER, ATTACK_TYPE_MELEE)
+	commonLvl1 := CreateMonsterOfRarityAndLevel(1, 1, MONSTER, ATTACK_TYPE_MELEE)
+	commonLvl2 := CreateMonsterOfRarityAndLevel(1, 2, MONSTER, ATTACK_TYPE_MELEE)
+
+	type InputMonsters struct {
+		M1 *MonsterCard
+		M2 *MonsterCard
+	}
+	type testCase struct {
+		Name           string
+		Input          InputMonsters
+		ExpectedOutput int
+	}
+
+	testCases := []testCase{
+		{
+			Name: "returns the difference of the monster speed if speed is different",
+			Input: InputMonsters{
+				M1: mSpeed2,
+				M2: mSpeed1,
+			},
+			ExpectedOutput: int(1),
+		},
+		{
+			Name: "returns the difference of the monster speed if speed is different 2",
+			Input: InputMonsters{
+				M1: mSpeed1,
+				M2: mSpeed2,
+			},
+			ExpectedOutput: int(-1),
+		},
+		// SPEED TIES
+		{
+			Name: "returns the magic user as faster if other one has no magic",
+			Input: InputMonsters{
+				M1: magicM,
+				M2: meleeM,
+			},
+			ExpectedOutput: int(1),
+		},
+		{
+			Name: "returns the ranged user as faster if other one has no ranged or magic",
+			Input: InputMonsters{
+				M1: rangedM,
+				M2: meleeM,
+			},
+			ExpectedOutput: int(1),
+		},
+		{
+			Name: "returns the rarer monster if the rest of stats are same",
+			Input: InputMonsters{
+				M1: legendaryLvl1,
+				M2: commonLvl1,
+			},
+			ExpectedOutput: int(3),
+		},
+		{
+			Name: "returns the higher level monster if the rest of stats are same",
+			Input: InputMonsters{
+				M1: commonLvl2,
+				M2: commonLvl1,
+			},
+			ExpectedOutput: int(1),
+		},
+	}
+
+	for _, tc := range testCases {
+		out := NormalCompareAttackOrder(tc.Input.M1, tc.Input.M2)
+		isExpected := assert.Equal(t, tc.ExpectedOutput, out)
+		if !isExpected {
+			fmt.Println(tc.ExpectedOutput, " - ", out)
+		}
+	}
+}

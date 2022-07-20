@@ -95,3 +95,19 @@ func GetDefaultFakeNoAttackCardDetail() CardDetail {
 	}
 	return CreateFakeCardDetail(MONSTER, stats)
 }
+
+func CreateMonsterOfRarityAndLevel(rarity, level int, cardType CardType, attackType CardAttackType) *MonsterCard {
+	var m *MonsterCard
+	m = GetDefaultFakeMonster(attackType)
+	m.cardDetail.Rarity = rarity
+	m.CardLevel = level
+	return m
+}
+
+func CreateSummonerOfRarityAndLevel(rarity, level int, cardType CardType) *SummonerCard {
+	var s *SummonerCard
+	s = GetDefaultFakeSummoner()
+	s.cardDetail.Rarity = rarity
+	s.CardLevel = level
+	return s
+}
