@@ -7,20 +7,24 @@ import (
 	"time"
 )
 
-func GetDidDodge(rulesets []Ruleset, attacker *MonsterCard, target *MonsterCard, attackType CardAttackType) bool {
+func GetDodgeChance(rulesets []Ruleset, attacker *MonsterCard, target *MonsterCard, attackType CardAttackType) float64 {
+	if attacker == nil || target == nil || rulesets == nil || len(rulesets) == 0 {
+		return 0
+	}
+
 	// true strike
 	if attacker.HasAbility(ABILITY_TRUE_STRIKE) {
-		return false
+		return 0
 	}
 
 	// magic always hits except phase
 	if attackType == ATTACK_TYPE_MAGIC && !target.HasAbility(ABILITY_PHASE) {
-		return false
+		return 0
 	}
 
 	// snare to flying
 	if attacker.HasAbility(ABILITY_SNARE) && target.HasAbility(ABILITY_FLYING) {
-		return false
+		return 0
 	}
 
 	// calculate dodge chance from speed difference
@@ -46,6 +50,17 @@ func GetDidDodge(rulesets []Ruleset, attacker *MonsterCard, target *MonsterCard,
 	// +15% if attacker has blind
 	if attacker.HasDebuff(ABILITY_BLIND) {
 		dodgeChance = dodgeChance + BLIND_DODGE_CHANCE
+	}
+	return dodgeChance
+}
+
+func GetDidDodge(rulesets []Ruleset, attacker *MonsterCard, target *MonsterCard, attackType CardAttackType) bool {
+	dodgeChance := GetDodgeChance(rulesets, attacker, target, attackType)
+	if dodgeChance <= 0 {
+		return false
+	}
+	if dodgeChance >= 1 {
+		return true
 	}
 	return GetSuccessBelow(dodgeChance * 100)
 }

@@ -30,9 +30,10 @@ func GetDefaultFakeMonster(attackType CardAttackType) *MonsterCard {
 		cardDetail = GetDefaultFakeNoAttackCardDetail()
 	}
 
-	var m *MonsterCard
-	m.Setup(cardDetail, 4)
-	return m
+	var m MonsterCard
+	(&m).Setup(cardDetail, 4)
+	m.Team = TEAM_NUM_ONE
+	return &m
 }
 
 func CreateFakeCardDetail(cardType CardType, stats CardRawStats) CardDetail {
@@ -49,33 +50,39 @@ func CreateFakeCardDetail(cardType CardType, stats CardRawStats) CardDetail {
 
 func GetDefaultFakeMagicOnlyCardDetail() CardDetail {
 	stats := CardRawStats{
-		Mana:   5,
-		Health: 5,
-		Speed:  5,
-		Armor:  5,
-		Magic:  5,
+		Mana:   []any{5, 5, 5, 5, 5, 5, 5, 5},
+		Health: []any{5, 5, 5, 5, 5, 5, 5, 5},
+		Speed:  []any{5, 5, 5, 5, 5, 5, 5, 5},
+		Armor:  []any{5, 5, 5, 5, 5, 5, 5, 5},
+		Magic:  []any{5, 5, 5, 5, 5, 5, 5, 5},
+		Ranged: []any{0, 0, 0, 0, 0, 0, 0, 0},
+		Attack: []any{0, 0, 0, 0, 0, 0, 0, 0},
 	}
 	return CreateFakeCardDetail(MONSTER, stats)
 }
 
 func GetDefaultFakeRangeOnlyCardDetail() CardDetail {
 	stats := CardRawStats{
-		Mana:   5,
-		Health: 5,
-		Speed:  5,
-		Armor:  5,
-		Ranged: 5,
+		Mana:   []any{5, 5, 5, 5, 5, 5, 5, 5},
+		Health: []any{5, 5, 5, 5, 5, 5, 5, 5},
+		Speed:  []any{5, 5, 5, 5, 5, 5, 5, 5},
+		Armor:  []any{5, 5, 5, 5, 5, 5, 5, 5},
+		Ranged: []any{5, 5, 5, 5, 5, 5, 5, 5},
+		Magic:  []any{0, 0, 0, 0, 0, 0, 0, 0},
+		Attack: []any{0, 0, 0, 0, 0, 0, 0, 0},
 	}
 	return CreateFakeCardDetail(MONSTER, stats)
 }
 
 func GetDefaultFakeMeleeOnlyCardDetail() CardDetail {
 	stats := CardRawStats{
-		Mana:   5,
-		Health: 5,
-		Speed:  5,
-		Armor:  5,
-		Attack: 5,
+		Mana:   []any{5, 5, 5, 5, 5, 5, 5, 5},
+		Health: []any{5, 5, 5, 5, 5, 5, 5, 5},
+		Speed:  []any{5, 5, 5, 5, 5, 5, 5, 5},
+		Armor:  []any{5, 5, 5, 5, 5, 5, 5, 5},
+		Attack: []any{5, 5, 5, 5, 5, 5, 5, 5},
+		Ranged: []any{0, 0, 0, 0, 0, 0, 0, 0},
+		Magic:  []any{0, 0, 0, 0, 0, 0, 0, 0},
 	}
 	return CreateFakeCardDetail(MONSTER, stats)
 }

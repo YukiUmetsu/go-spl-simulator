@@ -56,43 +56,78 @@ func (c *MonsterCard) Setup(cardDetail CardDetail, cardLevel int) {
 	// convert interface to []int
 	manaByLevel := make([]int, 0)
 	for _, m := range cardDetail.Stats.Mana.([]any) {
-		manaByLevel = append(manaByLevel, int(m.(float64)))
+		switch m.(type) {
+		case float64:
+			manaByLevel = append(manaByLevel, int(m.(float64)))
+		default:
+			manaByLevel = append(manaByLevel, m.(int))
+		}
 	}
 	cardStatsByLevel.Mana = manaByLevel
 
 	atkByLevel := make([]int, 0)
 	for _, m := range cardDetail.Stats.Attack.([]any) {
-		atkByLevel = append(atkByLevel, int(m.(float64)))
+		switch m.(type) {
+		case float64:
+			atkByLevel = append(atkByLevel, int(m.(float64)))
+		default:
+			atkByLevel = append(atkByLevel, m.(int))
+		}
 	}
 	cardStatsByLevel.Attack = atkByLevel
 
 	rangeByLevel := make([]int, 0)
 	for _, m := range cardDetail.Stats.Ranged.([]any) {
-		rangeByLevel = append(rangeByLevel, int(m.(float64)))
+		switch m.(type) {
+		case float64:
+			rangeByLevel = append(rangeByLevel, int(m.(float64)))
+		default:
+			rangeByLevel = append(rangeByLevel, m.(int))
+		}
 	}
 	cardStatsByLevel.Ranged = rangeByLevel
 
 	magicByLevel := make([]int, 0)
 	for _, m := range cardDetail.Stats.Magic.([]any) {
-		magicByLevel = append(magicByLevel, int(m.(float64)))
+		switch m.(type) {
+		case float64:
+			magicByLevel = append(magicByLevel, int(m.(float64)))
+		default:
+			magicByLevel = append(magicByLevel, m.(int))
+		}
 	}
 	cardStatsByLevel.Magic = magicByLevel
 
 	armorByLevel := make([]int, 0)
 	for _, m := range cardDetail.Stats.Armor.([]any) {
-		armorByLevel = append(armorByLevel, int(m.(float64)))
+		switch m.(type) {
+		case float64:
+			armorByLevel = append(armorByLevel, int(m.(float64)))
+		default:
+			armorByLevel = append(armorByLevel, m.(int))
+		}
 	}
 	cardStatsByLevel.Armor = armorByLevel
 
 	speedByLevel := make([]int, 0)
 	for _, m := range cardDetail.Stats.Speed.([]any) {
-		speedByLevel = append(speedByLevel, int(m.(float64)))
+		switch m.(type) {
+		case float64:
+			speedByLevel = append(speedByLevel, int(m.(float64)))
+		default:
+			speedByLevel = append(speedByLevel, m.(int))
+		}
 	}
 	cardStatsByLevel.Speed = speedByLevel
 
 	hpByLevel := make([]int, 0)
 	for _, m := range cardDetail.Stats.Health.([]any) {
-		hpByLevel = append(hpByLevel, int(m.(float64)))
+		switch m.(type) {
+		case float64:
+			hpByLevel = append(hpByLevel, int(m.(float64)))
+		default:
+			hpByLevel = append(hpByLevel, m.(int))
+		}
 	}
 	cardStatsByLevel.Health = hpByLevel
 
@@ -138,6 +173,10 @@ func (c *MonsterCard) AddAbilities(abilitiesArray [][]Ability) {
 			}
 		}
 	}
+}
+
+func (c *MonsterCard) AddAbility(ability Ability) {
+	c.Abilities = append(c.Abilities, ability)
 }
 
 func (c *MonsterCard) GetCardDetail() CardDetail {

@@ -5,6 +5,7 @@ import (
     "golang.org/x/exp/constraints"
     "log"
     "fmt"
+    "math"
 )
 
 func Remove[T comparable](l []T, item T) []T {
@@ -62,4 +63,10 @@ func PrintStruct(value any) {
 		log.Fatal(err)
 	}
 	fmt.Println(string(jsonData))
+}
+
+const float64EqualityThreshold = 1e-9
+
+func AlmostEqualFloat(a, b float64) bool {
+    return math.Abs(a - b) <= float64EqualityThreshold
 }
