@@ -61,6 +61,10 @@ func (c *SummonerCard) GetCardDetail() CardDetail {
 	return c.cardDetail
 }
 
+func (c *SummonerCard) SetCardDetail(cardDetail CardDetail) {
+	c.cardDetail = cardDetail
+}
+
 func (c *SummonerCard) HasAbility(ability Ability) bool {
 	return utils.Contains(c.Abilities, ability)
 }

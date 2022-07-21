@@ -183,6 +183,10 @@ func (c *MonsterCard) GetCardDetail() CardDetail {
 	return c.cardDetail
 }
 
+func (c *MonsterCard) SetCardDetail(cardDetail CardDetail) {
+	c.cardDetail = cardDetail
+}
+
 func (c *MonsterCard) HasAbility(ability Ability) bool {
 	return utils.Contains(c.Abilities, ability)
 }
@@ -780,4 +784,8 @@ func (c *MonsterCard) String() string {
 		c.GetPostAbilityRange(),
 		c.GetPostAbilityMagic(),
 	)
+}
+
+func (c *MonsterCard) GetHadDivineShield() bool {
+	return c.hadDivineShield
 }

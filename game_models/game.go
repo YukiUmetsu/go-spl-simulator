@@ -1147,10 +1147,12 @@ func (g *Game) MaybeApplyLifeLeech(attacker *MonsterCard, damage int) {
 	}
 
 	lifeLeechAmount := int(math.Ceil(float64(damage) / 2))
-	for i := 0; i < lifeLeechAmount; i++ {
-		attacker.AddBuff(ABILITY_LIFE_LEECH)
+	if lifeLeechAmount > 0 {
+		for i := 0; i < lifeLeechAmount; i++ {
+			attacker.AddBuff(ABILITY_LIFE_LEECH)
+		}
+		g.CreateAndAddBattleLog(BATTLE_ACTION_LIFE_LEECH, attacker, nil, lifeLeechAmount)
 	}
-	g.CreateAndAddBattleLog(BATTLE_ACTION_LIFE_LEECH, attacker, nil, lifeLeechAmount)
 }
 
 // Blast has a ton of edge cases... https://support.splinterlands.com/hc/en-us/articles/4414966685332-Abilities-Status-Effects
