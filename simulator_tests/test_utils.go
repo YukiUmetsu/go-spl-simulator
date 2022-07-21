@@ -142,7 +142,9 @@ func CreateFakeGameTeam() *GameTeam {
 	ml := make([]*MonsterCard, 0)
 	s := GetDefaultFakeSummoner()
 	m1 := GetDefaultFakeMonster(ATTACK_TYPE_MELEE)
-	ml = append(ml, m1)
+	m2 := GetDefaultFakeMonster(ATTACK_TYPE_MAGIC)
+	m3 := GetDefaultFakeMonster(ATTACK_TYPE_RANGED)
+	ml = append(ml, m1, m2, m3)
 	(&t).Create(s, ml, "test_player1")
 	return &t
 }

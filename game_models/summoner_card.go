@@ -57,6 +57,10 @@ func (c *SummonerCard) AddAbilities(abilities []Ability) {
 	}
 }
 
+func (c *SummonerCard) AddAbility(ability Ability) {
+	c.Abilities = append(c.Abilities, ability)
+}
+
 func (c *SummonerCard) GetCardDetail() CardDetail {
 	return c.cardDetail
 }
