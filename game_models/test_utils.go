@@ -4,18 +4,18 @@ func GetDefaultFakeSummoner() *SummonerCard {
 	abilities := []any{}
 	stats := CardRawStats{
 		Abilities: abilities,
-		Mana:      5,
-		Health:    0,
-		Speed:     0,
-		Armor:     0,
-		Attack:    0,
-		Ranged:    0,
-		Magic:     0,
+		Mana:      float64(5),
+		Health:    float64(0),
+		Speed:     float64(0),
+		Armor:     float64(0),
+		Attack:    float64(0),
+		Ranged:    float64(0),
+		Magic:     float64(0),
 	}
 	details := CreateFakeCardDetail(SUMMONER, stats)
-	var fakeSummoner *SummonerCard
-	fakeSummoner.Setup(details, 4)
-	return fakeSummoner
+	var fakeSummoner SummonerCard
+	(&fakeSummoner).Setup(details, 4)
+	return &fakeSummoner
 }
 
 func GetDefaultFakeMonster(attackType CardAttackType) *MonsterCard {
@@ -34,6 +34,14 @@ func GetDefaultFakeMonster(attackType CardAttackType) *MonsterCard {
 	(&m).Setup(cardDetail, 4)
 	m.Team = TEAM_NUM_ONE
 	return &m
+}
+
+func GetDefaultFakeMonsterWithAbility(attackType CardAttackType, abilities []Ability) *MonsterCard {
+	m := GetDefaultFakeMonster(attackType)
+	for _, ability := range abilities {
+		m.AddAbility(ability)
+	}
+	return m
 }
 
 func CreateFakeCardDetail(cardType CardType, stats CardRawStats) CardDetail {
@@ -110,4 +118,24 @@ func CreateSummonerOfRarityAndLevel(rarity, level int, cardType CardType) *Summo
 	s.cardDetail.Rarity = rarity
 	s.CardLevel = level
 	return s
+}
+
+func CreateFakeGameTeam() *GameTeam {
+	var t GameTeam
+	ml := make([]*MonsterCard, 0)
+	s := GetDefaultFakeSummoner()
+	m1 := GetDefaultFakeMonster(ATTACK_TYPE_MELEE)
+	ml = append(ml, m1)
+	(&t).Create(s, ml, "test_player1")
+	return &t
+}
+
+func CreateFakeGame() *Game {
+	var game Game
+	t1 := CreateFakeGameTeam()
+	t2 := CreateFakeGameTeam()
+	rulesets := make([]Ruleset, 0)
+	rulesets = append(rulesets, RULESET_EQUAL_OPPORTUNITY)
+	(&game).Create(t1, t2, rulesets, false)
+	return &game
 }

@@ -8,7 +8,7 @@ import (
 /** Hits the monster with magic damage. Returns the remainder damage. */
 func HitMonsterWithMagic(game *Game, target *MonsterCard, magicDamage int) BattleDamage {
 	// consider forcefield
-	if target.HasAbility(ABILITY_FORCEFIELD) && magicDamage > FORCEFIELD_MIN_DAMAGE {
+	if target.HasAbility(ABILITY_FORCEFIELD) && magicDamage >= FORCEFIELD_MIN_DAMAGE {
 		magicDamage = 1
 	}
 
