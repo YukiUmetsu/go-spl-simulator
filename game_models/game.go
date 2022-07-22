@@ -556,7 +556,7 @@ func (g *Game) GetNextMonsterTurn() *MonsterCard {
 }
 
 func (g *Game) DoMonsterPreTurn(m *MonsterCard) {
-	m.SetHasTurnPasses(true)
+	m.SetHasTurnPassed(true)
 	friendlyTeam := g.GetTeamOfMonster(m)
 
 	// Cleanse

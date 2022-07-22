@@ -367,6 +367,14 @@ func (c *MonsterCard) AddHealth(amount int) {
 	c.SetHealth(finalHealth)
 }
 
+func (c *MonsterCard) SetArmor(armor int) {
+	c.Armor = armor
+}
+
+func (c *MonsterCard) GetArmor() int {
+	return c.Armor
+}
+
 func (c *MonsterCard) HasBuff(buff Ability) bool {
 	_, ok := c.BuffMap[buff]
 	return ok
@@ -413,6 +421,31 @@ func (c *MonsterCard) SetIsOnlyMonster() {
 
 func (c *MonsterCard) HasAttack() bool {
 	return c.Melee > 0 || c.Ranged > 0 || c.Magic > 0
+}
+
+func (c *MonsterCard) HasAction() bool {
+	if c.IsPureMelee() && c.CanMeleeAttack() {
+		return true
+	}
+	if c.Magic > 0 {
+		return true
+	}
+
+	for _, actionAbility := range ACTION_ABILITIES {
+		if c.HasAbility(actionAbility) {
+			return true
+		}
+	}
+
+	if c.Ranged > 0 && c.GetCardPosition() > 0 {
+		return true
+	}
+
+	if c.Ranged > 0 && c.HasAbility(ABILITY_CLOSE_RANGE) {
+		return true
+	}
+
+	return false
 }
 
 func (c *MonsterCard) GetPostAbilityMaxHealth() int {
@@ -743,10 +776,6 @@ func (c *MonsterCard) AddSummonerMagic(stat int) {
 func (c *MonsterCard) RemoveDivineShield() {
 	c.hadDivineShield = true
 	c.RemoveAbility(ABILITY_DIVINE_SHIELD)
-}
-
-func (c *MonsterCard) SetHasTurnPasses(hasPassed bool) {
-	c.hasTurnPassed = hasPassed
 }
 
 func (c *MonsterCard) GetAllBuffs() map[Ability]int {

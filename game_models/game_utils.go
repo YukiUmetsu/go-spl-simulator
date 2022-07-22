@@ -108,7 +108,7 @@ func ResolveFriendlyTies(m1 *MonsterCard, m2 *MonsterCard) int {
 	}
 	m1Position := m1.GetCardPosition()
 	m2Position := m2.GetCardPosition()
-	if !m1.HasAttack() && !m2.HasAttack() {
+	if !m1.HasAction() && !m2.HasAction() {
 		if m1Position < m2Position {
 			return -1
 		}
