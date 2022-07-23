@@ -112,3 +112,146 @@ func TestGetScattershotTarget(t *testing.T) {
 	}
 	assert.True(t, len(targetMap) > 1)
 }
+
+func TestResetTeam(t *testing.T) {
+	// resets the card stats
+	_, _, gameTeam := getFakeTeam()
+	gameTeam.GetMonstersList()[0].SetHealth(0)
+	gameTeam.GetMonstersList()[0].SetArmor(0)
+	gameTeam.GetMonstersList()[1].AddAbility(ABILITY_LAST_STAND)
+	gameTeam.GetMonstersList()[1].SetIsOnlyMonster()
+	gameTeam.SetTeamNumber(TEAM_NUM_ONE)
+	gameTeam.ResetTeam()
+	assert.Equal(t, 3, len(gameTeam.GetAliveMonsters()))
+	assert.Equal(t, 5, gameTeam.GetAliveMonsters()[0].GetHealth())
+
+	// set only monster if there's only one monster
+	fakeSummoner, _, gameTeam := getFakeTeam()
+	fakeMonster := GetDefaultFakeMonster(ATTACK_TYPE_MAGIC)
+	gameTeam.Create(fakeSummoner, []*MonsterCard{fakeMonster}, gameTeam.GetPlayerName())
+	gameTeam.SetTeamNumber(TEAM_NUM_ONE)
+	assert.False(t, fakeMonster.IsLastMonster())
+	gameTeam.ResetTeam()
+	assert.True(t, gameTeam.GetMonstersList()[0].IsLastMonster())
+}
+
+func TestGetSnipeTarget(t *testing.T) {
+	// always returns taunt monster if there is one
+	_, fakeCards, gameTeam := getFakeTeam()
+	gameTeam.GetMonstersList()[2].AddAbility(ABILITY_TAUNT)
+	assert.Equal(t, fakeCards[2].GetCardDetail().ID, gameTeam.GetSnipeTarget().GetCardDetail().ID)
+	gameTeam.GetMonstersList()[2].RemoveAbility(ABILITY_TAUNT)
+	gameTeam.GetMonstersList()[1].AddAbility(ABILITY_TAUNT)
+	assert.Equal(t, fakeCards[1].GetCardDetail().ID, gameTeam.GetSnipeTarget().GetCardDetail().ID)
+
+	// normal snipe target
+	_, fakeCards, gameTeam = getFakeTeam()
+	assert.Equal(t, fakeCards[1].GetCardDetail().ID, gameTeam.GetSnipeTarget().GetCardDetail().ID)
+
+	// don't hit camoflage monster
+	_, fakeCards, gameTeam = getFakeTeam()
+	gameTeam.GetMonstersList()[1].AddAbility(ABILITY_CAMOUFLAGE)
+	assert.Equal(t, fakeCards[2].GetCardDetail().ID, gameTeam.GetSnipeTarget().GetCardDetail().ID)
+
+	// returns first monster if no snipe targets
+	_, fakeCards, gameTeam = getFakeTeam()
+	gameTeam.GetMonstersList()[1].AddAbility(ABILITY_CAMOUFLAGE)
+	gameTeam.GetMonstersList()[2].AddAbility(ABILITY_CAMOUFLAGE)
+	assert.Equal(t, fakeCards[0].GetCardDetail().ID, gameTeam.GetSnipeTarget().GetCardDetail().ID)
+}
+
+func TestGetOpportunityTarget(t *testing.T) {
+	// always returns taunt monster if there is one
+	_, fakeCards, gameTeam := getFakeTeam()
+	gameTeam.GetMonstersList()[2].AddAbility(ABILITY_TAUNT)
+	assert.Equal(t, fakeCards[2].GetCardDetail().ID, gameTeam.GetOpportunityTarget().GetCardDetail().ID)
+	gameTeam.GetMonstersList()[2].RemoveAbility(ABILITY_TAUNT)
+	gameTeam.GetMonstersList()[1].AddAbility(ABILITY_TAUNT)
+	assert.Equal(t, fakeCards[1].GetCardDetail().ID, gameTeam.GetOpportunityTarget().GetCardDetail().ID)
+
+	// returns the lowest health monster
+	_, fakeCards, gameTeam = getFakeTeam()
+	gameTeam.GetMonstersList()[1].SetHealth(1)
+	assert.Equal(t, fakeCards[1].GetCardDetail().ID, gameTeam.GetOpportunityTarget().GetCardDetail().ID)
+
+	// returns the correct target if original target has camoflauge
+	_, fakeCards, gameTeam = getFakeTeam()
+	gameTeam.GetMonstersList()[1].SetHealth(1)
+	gameTeam.GetMonstersList()[2].SetHealth(2)
+	gameTeam.GetMonstersList()[1].AddAbility(ABILITY_CAMOUFLAGE)
+	assert.Equal(t, fakeCards[2].GetCardDetail().ID, gameTeam.GetOpportunityTarget().GetCardDetail().ID)
+
+	// returns first monster if no opportunity targets
+	_, fakeCards, gameTeam = getFakeTeam()
+	gameTeam.GetMonstersList()[1].SetHealth(1)
+	gameTeam.GetMonstersList()[2].SetHealth(2)
+	gameTeam.GetMonstersList()[1].AddAbility(ABILITY_CAMOUFLAGE)
+	gameTeam.GetMonstersList()[2].AddAbility(ABILITY_CAMOUFLAGE)
+	assert.Equal(t, fakeCards[0].GetCardDetail().ID, gameTeam.GetOpportunityTarget().GetCardDetail().ID)
+}
+
+func TestGetSneakTarget(t *testing.T) {
+	// always returns taunt monster if there is one
+	_, fakeCards, gameTeam := getFakeTeam()
+	gameTeam.GetMonstersList()[2].AddAbility(ABILITY_TAUNT)
+	assert.Equal(t, fakeCards[2].GetCardDetail().ID, gameTeam.GetSneakTarget().GetCardDetail().ID)
+	gameTeam.GetMonstersList()[2].RemoveAbility(ABILITY_TAUNT)
+	gameTeam.GetMonstersList()[1].AddAbility(ABILITY_TAUNT)
+	assert.Equal(t, fakeCards[1].GetCardDetail().ID, gameTeam.GetSneakTarget().GetCardDetail().ID)
+
+	// get the last monster
+	_, fakeCards, gameTeam = getFakeTeam()
+	assert.Equal(t, fakeCards[2].GetCardDetail().ID, gameTeam.GetSneakTarget().GetCardDetail().ID)
+
+	// returns the correct target if original target has camoflauge
+	_, fakeCards, gameTeam = getFakeTeam()
+	gameTeam.GetMonstersList()[2].AddAbility(ABILITY_CAMOUFLAGE)
+	assert.Equal(t, fakeCards[1].GetCardDetail().ID, gameTeam.GetSneakTarget().GetCardDetail().ID)
+
+	// returns first monster if no sneak targets
+	_, fakeCards, gameTeam = getFakeTeam()
+	gameTeam.GetMonstersList()[1].AddAbility(ABILITY_CAMOUFLAGE)
+	gameTeam.GetMonstersList()[2].AddAbility(ABILITY_CAMOUFLAGE)
+	assert.Equal(t, fakeCards[0].GetCardDetail().ID, gameTeam.GetSneakTarget().GetCardDetail().ID)
+}
+
+func TestGetRepairTarget(t *testing.T) {
+	// returns null if no armor is lost
+	var monsterNilPointer *MonsterCard
+	_, fakeCards, gameTeam := getFakeTeam()
+	assert.Equal(t, gameTeam.GetRepairTarget(), monsterNilPointer)
+
+	// returns the monster that lost the most armor
+	gameTeam.GetMonstersList()[1].SetArmor(3)
+	assert.Equal(t, gameTeam.GetRepairTarget().GetCardDetail().ID, fakeCards[1].GetCardDetail().ID)
+	gameTeam.GetMonstersList()[0].SetArmor(0)
+	assert.Equal(t, gameTeam.GetRepairTarget().GetCardDetail().ID, fakeCards[0].GetCardDetail().ID)
+
+	// doesn't repair the dead monster's armor
+	_, fakeCards, gameTeam = getFakeTeam()
+	gameTeam.GetMonstersList()[1].SetArmor(1)
+	gameTeam.GetMonstersList()[1].SetHealth(0)
+	gameTeam.GetMonstersList()[0].SetArmor(3)
+	assert.Equal(t, gameTeam.GetRepairTarget().GetCardDetail().ID, fakeCards[0].GetCardDetail().ID)
+}
+
+func TestGetTriageHealTarget(t *testing.T) {
+	// returns null if no hp is lost
+	var monsterNilPointer *MonsterCard
+	_, fakeCards, gameTeam := getFakeTeam()
+	assert.Equal(t, gameTeam.GetTriageHealTarget(), monsterNilPointer)
+
+	// returns the backline monster that lost the most health
+	gameTeam.GetMonstersList()[1].SetHealth(3)
+	assert.Equal(t, gameTeam.GetTriageHealTarget().GetCardDetail().ID, fakeCards[1].GetCardDetail().ID)
+	gameTeam.GetMonstersList()[0].SetHealth(2)
+	assert.Equal(t, gameTeam.GetTriageHealTarget().GetCardDetail().ID, fakeCards[1].GetCardDetail().ID)
+	gameTeam.GetMonstersList()[2].SetHealth(1)
+	assert.Equal(t, gameTeam.GetTriageHealTarget().GetCardDetail().ID, fakeCards[2].GetCardDetail().ID)
+
+	// 	doesn't try to heal dead mosnter
+	_, fakeCards, gameTeam = getFakeTeam()
+	gameTeam.GetMonstersList()[1].SetHealth(0)
+	gameTeam.GetMonstersList()[2].SetHealth(1)
+	assert.Equal(t, gameTeam.GetTriageHealTarget().GetCardDetail().ID, fakeCards[2].GetCardDetail().ID)
+}

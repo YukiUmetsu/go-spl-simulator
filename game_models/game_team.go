@@ -25,6 +25,7 @@ func (t *GameTeam) ResetTeam() {
 	for _, m := range t.monsterList {
 		newMonsterList = append(newMonsterList, m.GetCleanCard())
 	}
+	t.monsterList = newMonsterList
 	t.SetMonsterPositions()
 
 	if len(t.monsterList) == 1 {
