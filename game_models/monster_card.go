@@ -2,6 +2,7 @@ package game_models
 
 import (
 	"fmt"
+	"log"
 	"math"
 
 	utils "github.com/YukiUmetsu/go-spl-simulator/game_utils"
@@ -221,6 +222,10 @@ func (c *MonsterCard) GetDebuffs() map[Ability]int {
 
 func (c *MonsterCard) GetBuffs() map[Ability]int {
 	return c.BuffMap
+}
+
+func (c *MonsterCard) GetStartingHealth() int {
+	return c.StartingHealth
 }
 
 func (c *MonsterCard) AddBuff(buff Ability) {
@@ -464,17 +469,19 @@ func (c *MonsterCard) GetPostAbilityMaxHealth() int {
 		maxHealth = maxHealth + SCAVENGER_AMOUNT*scavengerAmout
 	}
 
-	if c.HasBuff(ABILITY_CRIPPLE) {
+	if c.HasDebuff(ABILITY_CRIPPLE) {
 		maxHealth = maxHealth - CRIPPLE_AMOUNT*c.GetDebuffCount(ABILITY_CRIPPLE)
 	}
-	if c.GetIsLastStand() {
-		maxHealth = int(math.Floor(float64(maxHealth) * LAST_STAND_MULTIPLIER))
-	}
+
 	if c.HasDebuff(ABILITY_WEAKEN) {
 		maxHealth = maxHealth - WEAKEN_AMOUNT*c.GetDebuffCount(ABILITY_WEAKEN)
 	}
 	if c.HasBuff(ABILITY_STRENGTHEN) {
 		maxHealth = maxHealth + STRENGTHEN_AMOUNT*c.GetBuffCount(ABILITY_STRENGTHEN)
+	}
+
+	if c.GetIsLastStand() {
+		maxHealth = int(math.Floor(float64(maxHealth) * LAST_STAND_MULTIPLIER))
 	}
 
 	// The summoner skill made this starting health 0 or negative
@@ -505,7 +512,7 @@ func (c *MonsterCard) GetPostAbilityMagic() int {
 	}
 	postMagic := c.Magic
 	if c.HasDebuff(ABILITY_HALVING) {
-		postMagic = int(math.Floor((float64(postMagic) + 1) / 2))
+		postMagic = int(math.Floor((float64(postMagic)) / 2))
 		postMagic = utils.GetBigger(postMagic, 1)
 	}
 	if c.GetIsLastStand() {
@@ -533,7 +540,7 @@ func (c *MonsterCard) GetPostAbilityRange() int {
 	}
 	postRange := c.Ranged
 	if c.HasDebuff(ABILITY_HALVING) {
-		postRange = int(math.Floor((float64(postRange) + 1) / 2))
+		postRange = int(math.Floor((float64(postRange)) / 2))
 		postRange = utils.GetBigger(postRange, 1)
 	}
 	if c.GetIsLastStand() {
@@ -561,7 +568,7 @@ func (c *MonsterCard) GetPostAbilityMelee() int {
 	}
 	postMelee := c.Melee
 	if c.HasDebuff(ABILITY_HALVING) {
-		postMelee = int(math.Floor((float64(postMelee) + 1) / 2))
+		postMelee = int(math.Floor((float64(postMelee)) / 2))
 		postMelee = utils.GetBigger(postMelee, 1)
 	}
 	if c.GetIsLastStand() {
@@ -618,6 +625,9 @@ func (c *MonsterCard) GetPostAbilityMaxArmor() int {
 	for i := 0; i < c.GetBuffCount(ABILITY_PROTECT); i++ {
 		armorModifier = armorModifier + PROTECT_AMOUNT
 	}
+
+	postArmor = utils.GetBigger(postArmor+c.summonerArmor, 0)
+
 	for i := 0; i < c.GetDebuffCount(ABILITY_RUST); i++ {
 		armorModifier = armorModifier - RUST_AMOUNT
 	}
@@ -652,9 +662,7 @@ func (c *MonsterCard) RemoveBuff(buff Ability) {
 
 // TODO: comeback and check the validity of this code because of the rule
 func (c *MonsterCard) RemoveStrengthenHealth(healthAmount int) {
-	if c.Health < c.GetPostAbilityMaxHealth() {
-		c.RemoveBuffHealth(healthAmount)
-	}
+	c.RemoveBuffHealth(healthAmount)
 }
 
 // TODO: comeback and check the validity of this code because of the rule
@@ -715,6 +723,10 @@ func (c *MonsterCard) CleanseDebuffsAfterResurrect() {
 }
 
 func (c *MonsterCard) Resurrect() {
+	if c.Health > 0 {
+		log.Fatal("can't resurrect a monster that is not dead")
+	}
+
 	if c.hadDivineShield {
 		c.AddAbilitiesWithArray([]Ability{ABILITY_DIVINE_SHIELD})
 	}
