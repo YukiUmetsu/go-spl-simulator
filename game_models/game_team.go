@@ -119,7 +119,7 @@ func (t *GameTeam) SetAllMonsterHealth() {
 
 func (t *GameTeam) GetScattershotTarget() *MonsterCard {
 	aliveMonsters := t.GetAliveMonsters()
-	rand.Seed(time.Now().Unix())
+	rand.Seed(time.Now().UnixNano())
 	randomMonsterNum := rand.Intn(len(aliveMonsters))
 	return aliveMonsters[randomMonsterNum]
 }

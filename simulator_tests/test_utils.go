@@ -1,6 +1,9 @@
 package simulator_tests
 
 import (
+	"math/rand"
+	"time"
+
 	. "github.com/YukiUmetsu/go-spl-simulator/game_models"
 )
 
@@ -58,8 +61,13 @@ func GetDefaultFakeMonsterWithAbility(attackType CardAttackType, abilities []Abi
 }
 
 func CreateFakeCardDetail(cardType CardType, stats CardRawStats) CardDetail {
+	rand.Seed(time.Now().UnixNano())
+	min := 1
+	max := 10000
+	randomNumber := rand.Intn(max-min+1) + min
+
 	return CardDetail{
-		ID:        9999,
+		ID:        randomNumber,
 		Color:     COLOR_BLACK,
 		Type:      cardType,
 		Rarity:    1,
