@@ -170,3 +170,14 @@ func CreateFakeGame() *Game {
 	(&game).Create(t1, t2, rulesets, false)
 	return &game
 }
+
+// CreateFakeGameAndTeams - returns a fake new game and 2 teams in the game
+func CreateFakeGameAndTeams() (*Game, *GameTeam, *GameTeam) {
+	var game Game
+	t1 := CreateFakeGameTeam()
+	t2 := CreateFakeGameTeam()
+	rulesets := make([]Ruleset, 0)
+	rulesets = append(rulesets, RULESET_EQUAL_OPPORTUNITY)
+	(&game).Create(t1, t2, rulesets, false)
+	return &game, t1, t2
+}
